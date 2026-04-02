@@ -3,7 +3,33 @@
 @tailwind utilities;
 
 :root {
+  --paper: #f8f7f2;
+  --ink: #1a1a1a;
+  --graphite: #353535;
+  --mist: #868686;
+  --stroke: #d7d5cd;
+  --surface-border: rgba(26, 26, 26, 0.12);
+  --surface-bg: rgba(255, 255, 255, 0.68);
+  --shell-bg: rgba(255, 255, 255, 0.64);
+  --selection-bg: rgba(26, 26, 26, 0.14);
+  --glow-a: rgba(255, 255, 255, 0.6);
+  --glow-b: rgba(255, 255, 255, 0.35);
   color-scheme: light;
+}
+
+html.dark {
+  --paper: #0f1113;
+  --ink: #ebedf0;
+  --graphite: #c8cbd0;
+  --mist: #9aa0a9;
+  --stroke: #2e343d;
+  --surface-border: rgba(235, 237, 240, 0.16);
+  --surface-bg: rgba(27, 30, 34, 0.76);
+  --shell-bg: rgba(24, 27, 31, 0.72);
+  --selection-bg: rgba(235, 237, 240, 0.2);
+  --glow-a: rgba(79, 89, 106, 0.22);
+  --glow-b: rgba(61, 72, 89, 0.14);
+  color-scheme: dark;
 }
 
 *,
@@ -20,14 +46,15 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.6), transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.35), transparent 45%),
-    #f8f7f2;
-  color: #1a1a1a;
+    radial-gradient(circle at 10% 10%, var(--glow-a), transparent 40%),
+    radial-gradient(circle at 90% 80%, var(--glow-b), transparent 45%),
+    var(--paper);
+  color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 a {
@@ -35,11 +62,11 @@ a {
 }
 
 ::selection {
-  background: rgba(26, 26, 26, 0.14);
+  background: var(--selection-bg);
 }
 
 .section-rule {
-  border-top: 1px solid rgba(26, 26, 26, 0.12);
+  border-top: 1px solid var(--surface-border);
 }
 
 .editorial-kicker {
@@ -56,13 +83,13 @@ a {
 }
 
 .surface {
-  border: 1px solid rgba(26, 26, 26, 0.12);
-  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-bg);
   backdrop-filter: blur(4px);
 }
 
 .canvas-shell {
-  border: 1px solid rgba(26, 26, 26, 0.12);
-  background: rgba(255, 255, 255, 0.64);
-  box-shadow: 0 0 0 1px rgba(26, 26, 26, 0.03), 0 18px 40px rgba(26, 26, 26, 0.07);
+  border: 1px solid var(--surface-border);
+  background: var(--shell-bg);
+  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.08), 0 18px 40px rgba(20, 20, 20, 0.08);
 }

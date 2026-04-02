@@ -105,14 +105,14 @@ export function ContactSection() {
   };
 
   const inputBase =
-    "w-full rounded-none border border-black/15 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-black/50 placeholder:text-mist/60";
+    "w-full rounded-none border border-black/15 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-black/50 placeholder:text-mist/60 dark:border-white/25 dark:bg-white/5 dark:focus:border-white/55 dark:placeholder:text-mist/80";
 
   return (
     <section id="contact" className="section-rule">
       <div className="mx-auto w-full max-w-6xl px-6 py-24 md:px-10 md:py-28">
         <p className="editorial-kicker mb-8 text-xs text-mist">Contact</p>
 
-        <div className="max-w-2xl border border-black/10 bg-white/70 p-6 md:p-8">
+        <div className="max-w-2xl border border-black/10 bg-white/70 p-6 md:p-8 dark:border-white/15 dark:bg-white/[0.04]">
           <div className="mb-6">
             <p className="text-sm uppercase tracking-[0.16em] text-mist">Email</p>
             <a
@@ -188,7 +188,7 @@ export function ContactSection() {
               <button
                 type="submit"
                 disabled={status === "sending"}
-                className="rounded-none border border-black bg-ink px-6 py-2.5 text-xs uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-60"
+                className="rounded-none border border-black bg-black px-6 py-2.5 text-xs uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-60 dark:border-white/40 dark:bg-white dark:text-black"
               >
                 {status === "sending" ? "Sending..." : "Send"}
               </button>

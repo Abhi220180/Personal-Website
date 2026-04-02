@@ -105,14 +105,14 @@ export function HeroSection() {
     <section id="top" className="relative overflow-hidden section-rule">
       <div className="mx-auto w-full max-w-[1500px] px-6 pb-16 pt-10 md:px-10 md:pb-20 md:pt-12">
         <div className="flex justify-center">
-          <p className="rounded-full bg-[#1f1f1d] px-6 py-2 text-[11px] tracking-[0.04em] text-white md:text-xs">
+          <p className="rounded-full bg-[#1f1f1d] px-6 py-2 text-[11px] tracking-[0.04em] text-white dark:bg-white/12 dark:ring-1 dark:ring-white/20 md:text-xs">
             Everything laid out in JS with Pretext. Resize horizontally and vertically, then explore.
           </p>
         </div>
 
         <div className="mt-10 grid gap-10 xl:grid-cols-[1.06fr_0.94fr] xl:gap-14">
           <div>
-            <h1 className="editorial-display text-[3.1rem] font-medium uppercase leading-[0.88] tracking-[-0.02em] text-[#111] md:text-[5.2rem] xl:text-[7.65rem]">
+            <h1 className="editorial-display text-[3.1rem] font-medium uppercase leading-[0.88] tracking-[-0.02em] text-ink md:text-[5.2rem] xl:text-[7.65rem]">
               {heroTitleLines.map((line) => (
                 <span key={line} className="block">
                   {line}
@@ -126,7 +126,7 @@ export function HeroSection() {
             {heroRightColumnLead.map((paragraph) => (
               <p
                 key={paragraph}
-                className="editorial-display mb-5 text-[1.5rem] leading-[1.38] text-[#181818] md:text-[2rem] md:leading-[1.36]"
+                className="editorial-display mb-5 text-[1.5rem] leading-[1.38] text-ink md:text-[2rem] md:leading-[1.36]"
               >
                 {paragraph}
               </p>
@@ -184,7 +184,7 @@ export function HeroSection() {
           </a>
           <a
             href="#contact"
-            className="inline-flex items-center gap-2 border-b border-black pb-1 text-xs uppercase tracking-[0.14em] text-ink transition-opacity hover:opacity-60"
+            className="inline-flex items-center gap-2 border-b border-black/85 pb-1 text-xs uppercase tracking-[0.14em] text-ink transition-opacity hover:opacity-60 dark:border-white/45"
           >
             Start a conversation
           </a>

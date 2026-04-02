@@ -10,7 +10,7 @@ const IcoSphereEmbed = dynamic(
   () => import("@/components/three/IcoSphereEmbed").then((module) => module.IcoSphereEmbed),
   {
     ssr: false,
-    loading: () => <div className="h-full w-full rounded-full border border-black/10 bg-white/50" />
+    loading: () => <div className="h-full w-full rounded-full border border-black/10 bg-white/50 dark:border-white/20 dark:bg-white/5" />
   }
 );
 
@@ -271,13 +271,13 @@ export function BioSection() {
                 onPointerMove={handleDragMove}
                 onPointerUp={handleDragEnd}
                 onPointerCancel={handleDragEnd}
-                className={`relative h-full w-full rounded-full border border-black/20 bg-white/70 shadow-soft-line ${
+                className={`relative h-full w-full rounded-full border border-black/20 bg-white/70 shadow-soft-line dark:border-white/25 dark:bg-black/25 ${
                   isDraggingTile ? "cursor-grabbing" : "cursor-grab"
                 }`}
                 style={{ touchAction: "none", padding: `${ringThickness}px` }}
                 aria-label="Drag sphere by the outer ring"
               >
-                <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" aria-hidden>
+                <svg className="pointer-events-none absolute inset-0 h-full w-full text-mist" viewBox="0 0 100 100" aria-hidden>
                   <defs>
                     <path
                       id={dragHintPathId}
@@ -286,7 +286,7 @@ export function BioSection() {
                       },0 a ${ringLabelRadius},${ringLabelRadius} 0 1,1 -${ringLabelRadius * 2},0`}
                     />
                   </defs>
-                  <text fill="#6f6f6f" fontSize="2.8" letterSpacing="0.65">
+                  <text fill="currentColor" fontSize="2.8" letterSpacing="0.65">
                     <textPath
                       href={`#${dragHintPathId}`}
                       startOffset="0%"

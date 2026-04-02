@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Abhinav Gummadi | CS + CE at UW-Madison",
@@ -13,8 +14,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`(() => {
+            try {
+              const stored = localStorage.getItem("theme");
+              const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+              const theme = stored === "light" || stored === "dark" ? stored : (systemDark ? "dark" : "light");
+              document.documentElement.classList.toggle("dark", theme === "dark");
+            } catch {}
+          })();`}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }

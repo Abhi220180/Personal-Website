@@ -283,7 +283,7 @@ function NodePopup({ node, screenX, screenY, onMouseEnter, onMouseLeave, onClick
         aria-label={`Open ${node.label}`}
       >
         <div
-          className="overflow-hidden rounded-xl border-2 bg-white/95 shadow-lg backdrop-blur-sm transition-transform duration-200 group-hover:scale-110"
+          className="overflow-hidden rounded-xl border-2 bg-white/95 shadow-lg backdrop-blur-sm transition-transform duration-200 group-hover:scale-110 dark:bg-black/75"
           style={{
             borderColor: node.color ?? "#525252",
           }}
@@ -407,7 +407,7 @@ export function IcoSphereEmbed({ nodes }: IcoSphereEmbedProps) {
 
   return (
     <div className="relative h-full w-full">
-      <div className="absolute inset-0 overflow-hidden rounded-full border border-black/15 bg-white/64 shadow-soft-line">
+      <div className="absolute inset-0 overflow-hidden rounded-full border border-black/15 bg-white/64 shadow-soft-line dark:border-white/20 dark:bg-white/[0.06]">
         <Canvas
           dpr={[1, 1.5]}
           camera={{ position: [0, 0, 4.1], fov: 42 }}

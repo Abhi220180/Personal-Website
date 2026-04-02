@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.6), transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.35), transparent 45%),
+    #f8f7f2;
+  color: #1a1a1a;
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: rgba(26, 26, 26, 0.14);
+}
+
+.section-rule {
+  border-top: 1px solid rgba(26, 26, 26, 0.12);
+}
+
+.editorial-kicker {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.editorial-display {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+}
+
+.muted {
+  color: #4b4b4b;
+}
+
+.surface {
+  border: 1px solid rgba(26, 26, 26, 0.12);
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(4px);
+}
+
+.canvas-shell {
+  border: 1px solid rgba(26, 26, 26, 0.12);
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 0 0 1px rgba(26, 26, 26, 0.03), 0 18px 40px rgba(26, 26, 26, 0.07);
+}

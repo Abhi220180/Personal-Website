@@ -29,6 +29,16 @@ const projectSphereNodes: SphereNode[] = [
     anchorIndex: 12
   },
   {
+    id: "f1-simulator-project",
+    label: "F1 Simulator Project",
+    category: "Project",
+    href: "https://github.com/KushagraBharti/F1-ReinforcementLearning",
+    iconSrc: "/images/nodes/Tsunoda_Red_Bull_041125.webp",
+    color: "#1d4ed8",
+    ringColor: "#dc2626",
+    anchorIndex: 8
+  },
+  {
     id: "github",
     label: "GitHub",
     category: "Project",

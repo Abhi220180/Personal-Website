@@ -256,12 +256,22 @@ export function GlbOrbitCard({
   const containerRef = useRef<HTMLButtonElement | null>(null);
   const pointerStartRef = useRef<PointerPoint | null>(null);
   const pointerLastRef = useRef<PointerPoint | null>(null);
+  const activePointerIdRef = useRef<number | null>(null);
+  const pointerTypeRef = useRef<string | null>(null);
   const draggingRef = useRef(false);
   const rotationTargetRef = useRef<RotationTarget>({
     x: isShiverburn ? Math.PI / 6 : isBonefin ? Math.PI / 9 : 0,
     y: 0 
   });
   const [isVisible, setIsVisible] = useState(false);
+
+  const resetPointerState = () => {
+    draggingRef.current = false;
+    pointerStartRef.current = null;
+    pointerLastRef.current = null;
+    activePointerIdRef.current = null;
+    pointerTypeRef.current = null;
+  };
 
   useEffect(() => {
     const node = containerRef.current;
@@ -283,15 +293,32 @@ export function GlbOrbitCard({
   }, []);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (activePointerIdRef.current !== null) {
+      return;
+    }
+
+    activePointerIdRef.current = event.pointerId;
+    pointerTypeRef.current = event.pointerType;
     pointerStartRef.current = { x: event.clientX, y: event.clientY };
     pointerLastRef.current = { x: event.clientX, y: event.clientY };
     draggingRef.current = true;
     event.currentTarget.setPointerCapture(event.pointerId);
+    if (event.pointerType === "touch") {
+      event.preventDefault();
+    }
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (!draggingRef.current || !pointerLastRef.current) {
+    if (
+      !draggingRef.current ||
+      !pointerLastRef.current ||
+      activePointerIdRef.current !== event.pointerId
+    ) {
       return;
+    }
+
+    if (pointerTypeRef.current === "touch") {
+      event.preventDefault();
     }
 
     const dx = event.clientX - pointerLastRef.current.x;
@@ -299,26 +326,37 @@ export function GlbOrbitCard({
 
     pointerLastRef.current = { x: event.clientX, y: event.clientY };
 
-    rotationTargetRef.current.y += dx * 0.009;
-    rotationTargetRef.current.x = clamp(rotationTargetRef.current.x + dy * 0.008, -0.9, 0.9);
+    const isTouch = pointerTypeRef.current === "touch";
+    const yawSensitivity = isTouch ? 0.016 : 0.009;
+    const pitchSensitivity = isTouch ? 0.014 : 0.008;
+
+    rotationTargetRef.current.y += dx * yawSensitivity;
+    rotationTargetRef.current.x = clamp(rotationTargetRef.current.x + dy * pitchSensitivity, -0.9, 0.9);
   };
 
   const endPointer = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (activePointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
-    draggingRef.current = false;
-
     if (!onActivate || !pointerStartRef.current) {
+      resetPointerState();
       return;
     }
 
     const dx = event.clientX - pointerStartRef.current.x;
     const dy = event.clientY - pointerStartRef.current.y;
-    if (Math.hypot(dx, dy) < 7) {
+    const tapThreshold = pointerTypeRef.current === "touch" ? 16 : 7;
+
+    if (Math.hypot(dx, dy) < tapThreshold) {
       onActivate();
     }
+
+    resetPointerState();
   };
 
   return (
@@ -326,15 +364,18 @@ export function GlbOrbitCard({
       ref={containerRef}
       type="button"
       aria-label={ariaLabel ?? label}
-      className={`group relative flex flex-col items-center justify-center text-center ${className}`}
+      className={`group relative flex touch-none flex-col items-center justify-center text-center ${className}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endPointer}
       onPointerCancel={(event) => {
-        draggingRef.current = false;
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId);
         }
+        resetPointerState();
+      }}
+      onLostPointerCapture={() => {
+        resetPointerState();
       }}
       onKeyDown={(event) => {
         if ((event.key === "Enter" || event.key === " ") && onActivate) {

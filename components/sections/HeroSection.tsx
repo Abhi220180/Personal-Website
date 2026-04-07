@@ -51,7 +51,7 @@ export function HeroSection() {
           </div>
         </div>
 
-        <p className="relative z-20 mt-5 w-full text-center font-['Press_Start_2P'] text-[20px] uppercase leading-[1.3] tracking-[0.08em] text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)] sm:text-[24px] md:absolute md:left-[290px] md:top-10 md:mt-0 md:max-w-[calc(100%-480px)] md:text-left md:text-[36px] md:tracking-[0.10em] lg:text-[46px] xl:text-[56px]">
+        <p className="relative z-20 mt-5 w-full text-center font-['Press_Start_2P'] text-[20px] uppercase leading-[1.3] tracking-[0.08em] text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)] sm:text-[24px] md:absolute md:left-1/2 md:top-10 md:mt-0 md:w-[min(980px,calc(100%-420px))] md:-translate-x-1/2 md:text-center md:text-[36px] md:tracking-[0.10em] lg:text-[46px] xl:text-[56px]">
           <span className="block">{heroNameLine}</span>
         </p>
 

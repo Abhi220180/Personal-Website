@@ -1,321 +1,125 @@
-﻿"use client";
+"use client";
 
-import { FlowText, type FlowObstacle } from "@/components/pretext/FlowText";
-import { bioParagraphs, sphereNodes } from "@/lib/content";
-import dynamic from "next/dynamic";
-import type { PointerEvent as ReactPointerEvent } from "react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { GlbOrbitCard } from "@/components/three/GlbOrbitCard";
+import { aboutParagraphs } from "@/lib/content";
 
-const IcoSphereEmbed = dynamic(
-  () => import("@/components/three/IcoSphereEmbed").then((module) => module.IcoSphereEmbed),
-  {
-    ssr: false,
-    loading: () => <div className="h-full w-full rounded-full border border-black/10 bg-white/50 dark:border-white/20 dark:bg-white/5" />
-  }
-);
+import { FlowText } from "@/components/pretext/FlowText";
+import { useCallback, useRef, useState } from "react";
 
-type SphereLayout = {
-  isDesktop: boolean;
-  size: number;
-  left: number;
-  top: number;
-};
+const customStyleForWidth = (width: number) => ({
+  fontFamily: '"Press Start 2P", monospace',
+  fontWeight: 400,
+  fontSize: width < 768 ? 12 : 16,
+  lineHeight: width < 768 ? 26 : 34,
+  letterSpacing: 1.2
+});
 
-type Point = {
-  x: number;
-  y: number;
-};
+export function AboutSection() {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [isReady, setIsReady] = useState(false);
+  const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
 
-type DragSession = {
-  pointerId: number;
-  startX: number;
-  startY: number;
-  originX: number;
-  originY: number;
-};
-
-type DragBounds = {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-};
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function getSphereLayout(width: number): SphereLayout {
-  const isDesktop = width >= 940;
-  if (!isDesktop) {
-    const size = clamp(width * 0.8, 220, 320);
-    return {
-      isDesktop,
-      size,
-      left: 0,
-      top: 0
-    };
-  }
-
-  const size = clamp(width * 0.33, 250, 360);
-  const left = width - size - clamp(width * 0.05, 28, 54);
-  const top = 190;
-  return {
-    isDesktop,
-    size,
-    left,
-    top
-  };
-}
-
-function bioStyleForWidth(width: number) {
-  if (width < 640) {
-    return {
-      fontFamily:
-        "\"Iowan Old Style\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, Georgia, serif",
-      fontWeight: 400,
-      fontSize: 20,
-      lineHeight: 31,
-      letterSpacing: 0.08
-    };
-  }
-  if (width < 940) {
-    return {
-      fontFamily:
-        "\"Iowan Old Style\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, Georgia, serif",
-      fontWeight: 400,
-      fontSize: 24,
-      lineHeight: 36,
-      letterSpacing: 0.09
-    };
-  }
-  return {
-    fontFamily:
-      "\"Iowan Old Style\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, Georgia, serif",
-    fontWeight: 400,
-    fontSize: 26,
-    lineHeight: 39,
-    letterSpacing: 0.1
-  };
-}
-
-export function BioSection() {
-  const [flowLayout, setFlowLayout] = useState({ width: 0, height: 0 });
-  const [tilePosition, setTilePosition] = useState<Point | null>(null);
-  const [isDraggingTile, setIsDraggingTile] = useState(false);
-  const dragRef = useRef<DragSession | null>(null);
-  const dragHintPathId = useId();
-
-  const sphere = useMemo(() => getSphereLayout(flowLayout.width), [flowLayout.width]);
-  const ringThickness = useMemo(() => {
-    if (!sphere.isDesktop) {
-      return 0;
+  const handleLayout = useCallback(({ width, height }: { width: number; height: number }) => {
+    if (!isReady) {
+      setPos({
+        x: width / 2 - 140,
+        y: height / 2 - 90
+      });
+      setIsReady(true);
     }
-    return clamp(Math.round(sphere.size * 0.09), 20, 28);
-  }, [sphere.isDesktop, sphere.size]);
-  const shellDiameter = useMemo(() => sphere.size + ringThickness * 2, [ringThickness, sphere.size]);
-  const ringLabelRadius = useMemo(() => {
-    if (shellDiameter <= 0) {
-      return 44;
-    }
-    const ringThicknessPct = (ringThickness / shellDiameter) * 100;
-    return 50 - ringThicknessPct * 0.5;
-  }, [ringThickness, shellDiameter]);
-  const ringLabelCircumference = useMemo(
-    () => 2 * Math.PI * ringLabelRadius,
-    [ringLabelRadius]
-  );
-  const ringLabelText =
-    "CLICK OUTER RING TO DRAG SPHERE * CLICK NODE TO SEE CONTENT * CLICK OUTER RING TO DRAG SPHERE * CLICK NODE TO SEE CONTENT *";
-  const defaultShellPosition = useMemo<Point>(
-    () => ({
-      x: sphere.left - ringThickness,
-      y: sphere.top - ringThickness
-    }),
-    [ringThickness, sphere.left, sphere.top]
-  );
+  }, [isReady]);
 
-  const dragBounds = useMemo<DragBounds | null>(() => {
-    if (!sphere.isDesktop) {
-      return null;
-    }
-    const minX = 20;
-    const maxX = Math.max(minX, flowLayout.width - shellDiameter - 20);
-    const minY = 120;
-    const baseHeight = Math.max(flowLayout.height, 580);
-    const maxY = Math.max(minY, baseHeight - shellDiameter - 24);
-    return { minX, maxX, minY, maxY };
-  }, [flowLayout.height, flowLayout.width, shellDiameter, sphere.isDesktop]);
-
-  useEffect(() => {
-    if (!sphere.isDesktop || !dragBounds) {
-      setTilePosition(null);
-      return;
-    }
-    setTilePosition((previous) => {
-      const fallback = defaultShellPosition;
-      const current = previous ?? fallback;
-      return {
-        x: clamp(current.x, dragBounds.minX, dragBounds.maxX),
-        y: clamp(current.y, dragBounds.minY, dragBounds.maxY)
-      };
-    });
-  }, [defaultShellPosition, dragBounds, sphere.isDesktop]);
-
-  const activeTilePosition = useMemo<Point>(() => {
-    if (sphere.isDesktop) {
-      if (tilePosition) {
-        return tilePosition;
-      }
-      return defaultShellPosition;
-    }
-    return { x: 0, y: 0 };
-  }, [defaultShellPosition, sphere.isDesktop, tilePosition]);
-
-  const textObstacles = useMemo<FlowObstacle[]>(() => {
-    if (!sphere.isDesktop) {
-      return [];
-    }
-    return [
-      {
-        kind: "circle",
-        cx: activeTilePosition.x + shellDiameter * 0.5,
-        cy: activeTilePosition.y + shellDiameter * 0.5,
-        radius: shellDiameter * 0.5,
-        padding: 18
-      }
-    ];
-  }, [activeTilePosition.x, activeTilePosition.y, shellDiameter, sphere.isDesktop]);
-
-  const desktopWrapHeight = useMemo(() => {
-    if (!sphere.isDesktop) {
-      return flowLayout.height;
-    }
-    const tileBottom = activeTilePosition.y + shellDiameter + 24;
-    return Math.max(flowLayout.height, tileBottom);
-  }, [activeTilePosition.y, flowLayout.height, shellDiameter, sphere.isDesktop]);
-
-  const handleDragStart = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!sphere.isDesktop || !dragBounds) {
-      return;
-    }
-    event.preventDefault();
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
     dragRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originX: activeTilePosition.x,
-      originY: activeTilePosition.y
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: pos.x,
+      initialY: pos.y
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setIsDraggingTile(true);
   };
 
-  const handleDragMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (!drag || !dragBounds) {
-      return;
-    }
-    if (event.pointerId !== drag.pointerId) {
-      return;
-    }
-    event.preventDefault();
-    const nextX = clamp(drag.originX + (event.clientX - drag.startX), dragBounds.minX, dragBounds.maxX);
-    const nextY = clamp(drag.originY + (event.clientY - drag.startY), dragBounds.minY, dragBounds.maxY);
-    setTilePosition({ x: nextX, y: nextY });
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (e.buttons !== 1) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    setPos({
+      x: dragRef.current.initialX + dx,
+      y: dragRef.current.initialY + dy
+    });
   };
 
-  const handleDragEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (!drag || event.pointerId !== drag.pointerId) {
-      return;
-    }
-    dragRef.current = null;
-    setIsDraggingTile(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
+  const handlePointerUp = (e: React.PointerEvent) => {
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {}
   };
+
+  const obstacles = [
+    {
+      kind: "rect" as const,
+      left: pos.x + 95,
+      top: pos.y + 70,
+      right: pos.x + 185,
+      bottom: pos.y + 110,
+      padding: 8
+    }
+  ];
 
   return (
-    <section id="bio" className="section-rule">
-      <div className="mx-auto w-full max-w-6xl px-6 py-24 md:px-10 md:py-28">
-        <div className="mb-10">
-          <p className="editorial-kicker text-xs text-mist">Profile / Scrolling Bio</p>
-        </div>
+    <section id="who-i-am" className="section-rule">
+      <div className="w-full px-6 py-24 md:px-10 md:py-28">
+        <p className="font-['Press_Start_2P'] text-[10px] uppercase tracking-[0.09em] text-white/90">Who I Am</p>
 
-        <div className="relative" style={sphere.isDesktop ? { minHeight: `${desktopWrapHeight}px` } : undefined}>
-          <FlowText
-            className="w-full"
-            paragraphs={bioParagraphs}
-            paragraphGap={30}
-            minLineWidth={210}
-            fillSplitSpans
-            styleForWidth={bioStyleForWidth}
-            obstacles={textObstacles}
-            onLayout={setFlowLayout}
-          />
+        <div className="relative mt-10">
+          <div className="flex justify-end xl:absolute xl:right-0 xl:-top-44">
+            <GlbOrbitCard
+              modelPath="/models/cosmic-cove.glb"
+              label="Cosmic Cove"
+              showLabel={false}
+              scale={1.02}
+              className="h-[250px] w-[250px] sm:h-[290px] sm:w-[290px] lg:h-[320px] lg:w-[320px]"
+            />
+          </div>
 
-          {sphere.isDesktop ? (
-            <div
-              className={`absolute ${isDraggingTile ? "z-20" : "z-10"}`}
-              style={{
-                top: `${activeTilePosition.y}px`,
-                left: `${activeTilePosition.x}px`,
-                width: `${shellDiameter}px`,
-                height: `${shellDiameter}px`
-              }}
-            >
+          <div className="mt-8 xl:mt-0 xl:max-w-3xl">
+            <div className="relative min-h-[500px]">
+              <FlowText
+                paragraphs={aboutParagraphs}
+                obstacles={obstacles}
+                onLayout={handleLayout}
+                styleForWidth={customStyleForWidth}
+                fillSplitSpans
+                className="w-full text-white/90"
+              />
+
               <div
-                onPointerDown={handleDragStart}
-                onPointerMove={handleDragMove}
-                onPointerUp={handleDragEnd}
-                onPointerCancel={handleDragEnd}
-                className={`relative h-full w-full rounded-full border border-black/20 bg-white/70 shadow-soft-line dark:border-white/25 dark:bg-black/25 ${
-                  isDraggingTile ? "cursor-grabbing" : "cursor-grab"
-                }`}
-                style={{ touchAction: "none", padding: `${ringThickness}px` }}
-                aria-label="Drag sphere by the outer ring"
+                className="absolute z-10 w-[280px] h-[180px] cursor-move touch-none"
+                style={{
+                  left: pos.x,
+                  top: pos.y,
+                  opacity: isReady ? 1 : 0
+                }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
               >
-                <svg className="pointer-events-none absolute inset-0 h-full w-full text-mist" viewBox="0 0 100 100" aria-hidden>
-                  <defs>
-                    <path
-                      id={dragHintPathId}
-                      d={`M 50,50 m -${ringLabelRadius},0 a ${ringLabelRadius},${ringLabelRadius} 0 1,1 ${
-                        ringLabelRadius * 2
-                      },0 a ${ringLabelRadius},${ringLabelRadius} 0 1,1 -${ringLabelRadius * 2},0`}
-                    />
-                  </defs>
-                  <text fill="currentColor" fontSize="2.8" letterSpacing="0.65">
-                    <textPath
-                      href={`#${dragHintPathId}`}
-                      startOffset="0%"
-                      textLength={ringLabelCircumference}
-                      lengthAdjust="spacingAndGlyphs"
-                    >
-                      {ringLabelText}
-                    </textPath>
-                  </text>
-                </svg>
-                <div
-                  className="relative h-full w-full"
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onPointerMove={(event) => event.stopPropagation()}
-                  onPointerUp={(event) => event.stopPropagation()}
-                  onPointerCancel={(event) => event.stopPropagation()}
-                >
-                  <IcoSphereEmbed nodes={sphereNodes} />
-                </div>
+                <div className="absolute inset-0 z-20" />
+                <GlbOrbitCard
+                  modelPath="/models/rb16.glb"
+                  label="RB16"
+                  showLabel={false}
+                  scale={0.68}
+                  autoRotateSpeed={0.18}
+                  className="h-full w-full pointer-events-none"
+                />
               </div>
             </div>
-          ) : null}
-        </div>
-
-        {!sphere.isDesktop ? (
-          <div className="mx-auto mt-14 h-[340px] w-full max-w-[360px]">
-            <IcoSphereEmbed nodes={sphereNodes} />
           </div>
-        ) : null}
+        </div>
       </div>
     </section>
   );

@@ -105,28 +105,28 @@ export function ContactSection() {
   };
 
   const inputBase =
-    "w-full rounded-none border border-black/15 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-black/50 placeholder:text-mist/60 dark:border-white/25 dark:bg-white/5 dark:focus:border-white/55 dark:placeholder:text-mist/80";
+    "w-full rounded-none border border-white/35 bg-black/35 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-white/70 placeholder:text-white/55";
 
   return (
     <section id="contact" className="section-rule">
-      <div className="mx-auto w-full max-w-6xl px-6 py-24 md:px-10 md:py-28">
-        <p className="editorial-kicker mb-8 text-xs text-mist">Contact</p>
+      <div className="w-full px-6 py-24 md:px-10 md:py-28">
+        <p className="font-['Press_Start_2P'] mb-8 text-[10px] uppercase tracking-[0.09em] text-white/90">Contact</p>
 
-        <div className="max-w-2xl border border-black/10 bg-white/70 p-6 md:p-8 dark:border-white/15 dark:bg-white/[0.04]">
+        <div className="max-w-2xl border border-white/30 bg-black/35 p-6 backdrop-blur-sm md:p-8">
           <div className="mb-6">
-            <p className="text-sm uppercase tracking-[0.16em] text-mist">Email</p>
+            <p className="text-sm uppercase tracking-[0.16em] text-white/70">Email</p>
             <a
               href={`mailto:${contactInfo.recipientEmail}`}
-              className="mt-1 inline-block text-base text-ink underline-offset-4 hover:underline md:text-lg"
+              className="mt-1 inline-block text-base text-white underline-offset-4 hover:underline md:text-lg"
             >
               {contactInfo.displayEmail}
             </a>
-            <p className="mt-0.5 text-sm text-mist">{contactInfo.location}</p>
+            <p className="mt-0.5 text-sm text-white/75">{contactInfo.location}</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="grid gap-4">
             <label className="grid gap-1.5">
-              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-mist">Your Email</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/75">Your Email</span>
               <input
                 type="email"
                 value={values.visitorEmail}
@@ -146,7 +146,7 @@ export function ContactSection() {
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-mist">Subject</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/75">Subject</span>
               <input
                 type="text"
                 value={values.subject}
@@ -166,7 +166,7 @@ export function ContactSection() {
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-mist">Message</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/75">Message</span>
               <textarea
                 value={values.message}
                 onChange={(event) =>
@@ -188,11 +188,11 @@ export function ContactSection() {
               <button
                 type="submit"
                 disabled={status === "sending"}
-                className="rounded-none border border-black bg-black px-6 py-2.5 text-xs uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-60 dark:border-white/40 dark:bg-white dark:text-black"
+                className="rounded-none border border-white/45 bg-white/95 px-6 py-2.5 text-xs uppercase tracking-[0.14em] text-black transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-60"
               >
                 {status === "sending" ? "Sending..." : "Send"}
               </button>
-              <span className="text-[11px] text-mist/70">
+              <span className="text-[11px] text-white/65">
                 {process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT
                   ? "Formspree-enabled"
                   : "mailto fallback enabled"}
@@ -206,7 +206,7 @@ export function ContactSection() {
                     ? "text-[#1f5138]"
                     : hasErrors || status === "error"
                       ? "text-[#8e2f2f]"
-                      : "text-mist"
+                      : "text-white/75"
                 }`}
               >
                 {statusMessage}

@@ -210,6 +210,7 @@ export function FlowText({
 }: FlowTextProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);
+  const [fontEpoch, setFontEpoch] = useState(0);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -223,6 +224,34 @@ export function FlowText({
     const observer = new ResizeObserver(update);
     observer.observe(node);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined" || !("fonts" in document)) {
+      return;
+    }
+
+    const fontSet = document.fonts;
+    let active = true;
+    const bump = () => {
+      if (active) {
+        setFontEpoch((value) => value + 1);
+      }
+    };
+
+    void fontSet.ready.then(bump).catch(() => undefined);
+
+    const onLoadingDone = () => bump();
+    const onLoadingError = () => bump();
+
+    fontSet.addEventListener("loadingdone", onLoadingDone);
+    fontSet.addEventListener("loadingerror", onLoadingError);
+
+    return () => {
+      active = false;
+      fontSet.removeEventListener("loadingdone", onLoadingDone);
+      fontSet.removeEventListener("loadingerror", onLoadingError);
+    };
   }, []);
 
   const style = useMemo(() => styleForWidth(width), [styleForWidth, width]);
@@ -240,7 +269,7 @@ export function FlowText({
     }
     const fontString = `${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`;
     return paragraphs.map((paragraph) => prepareWithSegments(paragraph, fontString));
-  }, [paragraphs, style.fontFamily, style.fontSize, style.fontWeight, width]);
+  }, [fontEpoch, paragraphs, style.fontFamily, style.fontSize, style.fontWeight, width]);
 
   const layout = useMemo<LayoutResult>(() => {
     if (width === 0 || preparedParagraphs.length === 0) {
@@ -254,6 +283,8 @@ export function FlowText({
 
     const lines: FlowLine[] = [];
     let y = 0;
+    const proseRightInset = 390;
+    const maxLineWidth = Math.max(minLineWidth, width - proseRightInset);
 
     for (let paragraphIndex = 0; paragraphIndex < preparedParagraphs.length; paragraphIndex += 1) {
       let lineCursor = { segmentIndex: 0, graphemeIndex: 0 };
@@ -275,11 +306,13 @@ export function FlowText({
 
         for (let spanIndex = 0; spanIndex < spans.length; spanIndex += 1) {
           const span = spans[spanIndex];
-          const line = layoutNextLine(preparedParagraphs[paragraphIndex], lineCursor, span.width);
+          const targetWidth = Math.max(1, Math.min(span.width, maxLineWidth));
+          const line = layoutNextLine(preparedParagraphs[paragraphIndex], lineCursor, targetWidth);
           if (line === null) {
             paragraphDone = true;
             break;
           }
+
           lines.push({
             id: `${paragraphIndex}-${safetyCounter}-${spanIndex}`,
             text: line.text,
@@ -346,7 +379,7 @@ export function FlowText({
           };
 
           return (
-            <span key={line.id} className="absolute block whitespace-pre text-graphite" style={sharedStyle}>
+            <span key={line.id} className="absolute block whitespace-pre text-[color:var(--prose)]" style={sharedStyle}>
               {line.text}
             </span>
           );

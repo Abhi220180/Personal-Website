@@ -2,33 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("/fonts/PressStart2P.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --paper: #f8f7f2;
-  --ink: #1a1a1a;
-  --graphite: #353535;
-  --mist: #868686;
-  --stroke: #d7d5cd;
-  --surface-border: rgba(26, 26, 26, 0.12);
-  --surface-bg: rgba(255, 255, 255, 0.68);
-  --shell-bg: rgba(255, 255, 255, 0.64);
-  --selection-bg: rgba(26, 26, 26, 0.14);
-  --glow-a: rgba(255, 255, 255, 0.6);
-  --glow-b: rgba(255, 255, 255, 0.35);
-  color-scheme: light;
+  --paper: #071027;
+  --ink: #f3f7ff;
+  --graphite: #e6eeff;
+  --mist: #b8c5e6;
+  --stroke: rgba(255, 255, 255, 0.24);
+  --surface-border: rgba(255, 255, 255, 0.24);
+  --surface-bg: rgba(9, 16, 34, 0.55);
+  --shell-bg: rgba(8, 16, 32, 0.58);
+  --selection-bg: rgba(255, 255, 255, 0.22);
+  --prose: #ecf2ff;
+  color-scheme: dark;
 }
 
 html.dark {
-  --paper: #0f1113;
-  --ink: #ebedf0;
-  --graphite: #c8cbd0;
-  --mist: #9aa0a9;
-  --stroke: #2e343d;
-  --surface-border: rgba(235, 237, 240, 0.16);
-  --surface-bg: rgba(27, 30, 34, 0.76);
-  --shell-bg: rgba(24, 27, 31, 0.72);
-  --selection-bg: rgba(235, 237, 240, 0.2);
-  --glow-a: rgba(79, 89, 106, 0.22);
-  --glow-b: rgba(61, 72, 89, 0.14);
   color-scheme: dark;
 }
 
@@ -45,16 +41,18 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(circle at 10% 10%, var(--glow-a), transparent 40%),
-    radial-gradient(circle at 90% 80%, var(--glow-b), transparent 45%),
-    var(--paper);
+  background-image:
+    linear-gradient(rgba(6, 13, 30, 0.46), rgba(6, 13, 30, 0.46)),
+    url("/assets/page-background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-color: var(--paper);
   color: var(--ink);
-  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
+  font-family: "Press Start 2P", "Courier New", monospace;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 180ms ease, color 180ms ease;
 }
 
 a {
@@ -69,17 +67,21 @@ a {
   border-top: 1px solid var(--surface-border);
 }
 
+[data-page-top-nav] + .section-rule {
+  border-top: 0;
+}
+
 .editorial-kicker {
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .editorial-display {
-  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  font-family: "Press Start 2P", "Courier New", monospace;
 }
 
 .muted {
-  color: #4b4b4b;
+  color: var(--mist);
 }
 
 .surface {
@@ -91,5 +93,5 @@ a {
 .canvas-shell {
   border: 1px solid var(--surface-border);
   background: var(--shell-bg);
-  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.08), 0 18px 40px rgba(20, 20, 20, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 40px rgba(0, 0, 0, 0.28);
 }

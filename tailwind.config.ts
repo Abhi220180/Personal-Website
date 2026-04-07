@@ -18,19 +18,12 @@ const config: Config = {
       },
       fontFamily: {
         display: [
-          "\"Iowan Old Style\"",
-          "\"Palatino Linotype\"",
-          "\"Book Antiqua\"",
-          "Palatino",
-          "Georgia",
-          "serif"
+          '"Press Start 2P"',
+          "monospace"
         ],
         body: [
-          "\"Avenir Next\"",
-          "\"Segoe UI\"",
-          "\"Helvetica Neue\"",
-          "Arial",
-          "sans-serif"
+          '"Press Start 2P"',
+          "monospace"
         ]
       },
       boxShadow: {

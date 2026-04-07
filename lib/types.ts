@@ -23,3 +23,13 @@ export interface ContactInfo {
   recipientEmail: string;
   location: string;
 }
+
+export interface HeroPlanetLink {
+  id: string;
+  label: string;
+  href: string;
+  modelPath: string;
+  description: string;
+  scale?: number;
+}
+

@@ -175,7 +175,7 @@ function Scene({ nodes, hoveredId, onHoverNode, onClickNode, canvasEl, onScreenP
         <meshStandardMaterial
           color="#fbfbf9"
           transparent
-          opacity={0.21}
+          opacity={0.45}
           roughness={0.95}
           metalness={0.02}
         />
@@ -219,6 +219,7 @@ function Scene({ nodes, hoveredId, onHoverNode, onClickNode, canvasEl, onScreenP
                   color={node.ringColor}
                   emissive={isHovered ? node.ringColor : "#181818"}
                   emissiveIntensity={isHovered ? 0.35 : 0.08}
+                  side={THREE.BackSide}
                 />
               </mesh>
             ) : null}
@@ -407,7 +408,7 @@ export function IcoSphereEmbed({ nodes }: IcoSphereEmbedProps) {
 
   return (
     <div className="relative h-full w-full">
-      <div className="absolute inset-0 overflow-hidden rounded-full border border-black/15 bg-white/64 shadow-soft-line dark:border-white/20 dark:bg-white/[0.06]">
+      <div className="absolute inset-0 overflow-hidden rounded-full bg-white/64 shadow-soft-line dark:bg-white/[0.06]">
         <Canvas
           dpr={[1, 1.5]}
           camera={{ position: [0, 0, 4.1], fov: 42 }}

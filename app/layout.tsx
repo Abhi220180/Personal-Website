@@ -5,7 +5,12 @@ import Script from "next/script";
 export const metadata: Metadata = {
   title: "Abhinav Gummadi | CS + CE at UW-Madison",
   description:
-    "Interactive editorial-style personal website for Abhinav Gummadi, a CS + CE student at UW-Madison."
+    "Interactive editorial-style personal website for Abhinav Gummadi, a CS + CE student at UW-Madison.",
+  icons: {
+    icon: "/images/website-profile-pic.jpg",
+    shortcut: "/images/website-profile-pic.jpg",
+    apple: "/images/website-profile-pic.jpg"
+  }
 };
 
 export default function RootLayout({

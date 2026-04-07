@@ -20,16 +20,20 @@ const customStyleForWidth = (width: number) => ({
   letterSpacing: 1.2
 });
 
+const RB_CARD_WIDTH = 320;
+const RB_CARD_HEIGHT = 205;
+
 export function AboutSection() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [isReady, setIsReady] = useState(false);
+  const activePointerIdRef = useRef<number | null>(null);
   const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
 
   const handleLayout = useCallback(({ width, height }: { width: number; height: number }) => {
     if (!isReady) {
       setPos({
-        x: width / 2 - 140,
-        y: height / 2 - 90
+        x: width / 2 - RB_CARD_WIDTH / 2,
+        y: height / 2 - RB_CARD_HEIGHT / 2
       });
       setIsReady(true);
     }
@@ -37,6 +41,9 @@ export function AboutSection() {
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (activePointerIdRef.current !== null) return;
+
+    activePointerIdRef.current = e.pointerId;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {}
@@ -46,31 +53,42 @@ export function AboutSection() {
       initialX: pos.x,
       initialY: pos.y
     };
+
+    if (e.pointerType === "touch") {
+      e.preventDefault();
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (e.buttons !== 1) return;
+    if (activePointerIdRef.current !== e.pointerId) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     setPos({
       x: dragRef.current.initialX + dx,
       y: dragRef.current.initialY + dy
     });
+
+    if (e.pointerType === "touch") {
+      e.preventDefault();
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {}
+    if (activePointerIdRef.current === e.pointerId) {
+      activePointerIdRef.current = null;
+    }
   };
 
   const obstacles = [
     {
       kind: "rect" as const,
-      left: pos.x + 95,
-      top: pos.y + 70,
-      right: pos.x + 185,
-      bottom: pos.y + 110,
+      left: pos.x + 108,
+      top: pos.y + 84,
+      right: pos.x + 224,
+      bottom: pos.y + 136,
       padding: 8
     }
   ];
@@ -92,6 +110,9 @@ export function AboutSection() {
           </div>
 
           <div className="mt-8 xl:mt-0 xl:max-w-3xl">
+            <p className="mb-4 font-['Press_Start_2P'] text-[10px] uppercase tracking-[0.09em] text-white/90">
+              Drag The Red Bull Into Text
+            </p>
             <div className="relative min-h-[500px]">
               <FlowText
                 paragraphs={aboutParagraphs}
@@ -103,7 +124,7 @@ export function AboutSection() {
               />
 
               <div
-                className="absolute z-10 w-[280px] h-[180px] cursor-move touch-none"
+                className="absolute z-10 h-[205px] w-[320px] cursor-move touch-none md:h-[230px] md:w-[360px]"
                 style={{
                   left: pos.x,
                   top: pos.y,
@@ -112,13 +133,14 @@ export function AboutSection() {
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
               >
                 <div className="absolute inset-0 z-20" />
                 <GlbOrbitCard
                   modelPath="/models/rb16.glb"
                   label="RB16"
                   showLabel={false}
-                  scale={0.68}
+                  scale={0.84}
                   autoRotateSpeed={0.18}
                   className="h-full w-full pointer-events-none"
                 />

@@ -45,7 +45,7 @@ export function HeroSection() {
                 priority
               />
               <span className="font-['Press_Start_2P'] text-[8px] uppercase tracking-[0.08em] text-white/90 md:text-[10px] md:tracking-[0.09em]">
-                Click Plushie: UW
+                Click Bucky The Plushie
               </span>
             </a>
           </div>

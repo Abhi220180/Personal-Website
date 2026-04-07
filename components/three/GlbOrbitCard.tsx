@@ -41,6 +41,15 @@ interface FitCameraProps {
   radius: number;
 }
 
+interface GlbSceneProps {
+  modelPath: string;
+  scale: number;
+  autoRotateSpeed: number;
+  rotationTargetRef: MutableRefObject<RotationTarget>;
+  draggingRef: MutableRefObject<boolean>;
+  isLowMemoryMode: boolean;
+}
+
 interface GlbOrbitCardProps {
   modelPath: string;
   label: string;
@@ -234,6 +243,35 @@ function Placeholder() {
   );
 }
 
+function GlbScene({
+  modelPath,
+  scale,
+  autoRotateSpeed,
+  rotationTargetRef,
+  draggingRef,
+  isLowMemoryMode
+}: GlbSceneProps) {
+  const { scene } = useGLTF(modelPath);
+  const prepared = useMemo(() => prepareModel(scene, scale), [scene, scale]);
+
+  return (
+    <>
+      <FitCamera radius={prepared.radius} />
+      <ambientLight intensity={isLowMemoryMode ? 1.18 : 1.25} />
+      {!isLowMemoryMode ? <Environment preset="city" /> : null}
+      <hemisphereLight intensity={isLowMemoryMode ? 0.72 : 0.85} groundColor="#131a32" />
+      <directionalLight intensity={isLowMemoryMode ? 1 : 1.35} position={[2.4, 2.8, 2.9]} />
+      {!isLowMemoryMode ? <directionalLight intensity={0.66} position={[-2.3, -1.7, -2.4]} /> : null}
+      <GlbModel
+        prepared={prepared}
+        autoRotateSpeed={autoRotateSpeed}
+        rotationTargetRef={rotationTargetRef}
+        draggingRef={draggingRef}
+      />
+    </>
+  );
+}
+
 export function GlbOrbitCard({
   modelPath,
   label,
@@ -250,8 +288,6 @@ export function GlbOrbitCard({
   const isBonefin = modelPath.includes("bonefin");
 
   const finalScale = (isRb16 ? scale : scale * 1.8) * (isBonefin ? 20 : 1);
-  const { scene } = useGLTF(modelPath);
-  const prepared = useMemo(() => prepareModel(scene, finalScale), [scene, finalScale]);
 
   const containerRef = useRef<HTMLButtonElement | null>(null);
   const pointerStartRef = useRef<PointerPoint | null>(null);
@@ -264,6 +300,7 @@ export function GlbOrbitCard({
     y: 0 
   });
   const [isVisible, setIsVisible] = useState(false);
+  const [isLowMemoryMode, setIsLowMemoryMode] = useState(false);
 
   const resetPointerState = () => {
     draggingRef.current = false;
@@ -285,11 +322,25 @@ export function GlbOrbitCard({
           setIsVisible(entry.isIntersecting);
         }
       },
-      { root: null, rootMargin: "0px 0px", threshold: 0.01 }
+      { root: null, rootMargin: "0px 0px", threshold: 0.15 }
     );
 
     observer.observe(node);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(pointer: coarse)");
+    const updateMode = () => setIsLowMemoryMode(mediaQuery.matches);
+
+    updateMode();
+    try {
+      mediaQuery.addEventListener("change", updateMode);
+      return () => mediaQuery.removeEventListener("change", updateMode);
+    } catch {
+      mediaQuery.addListener(updateMode);
+      return () => mediaQuery.removeListener(updateMode);
+    }
   }, []);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -386,19 +437,23 @@ export function GlbOrbitCard({
     >
       <div className="relative aspect-square h-full max-h-full max-w-full overflow-visible transition-transform duration-300 group-hover:scale-[1.02]">
         {isVisible ? (
-          <Canvas dpr={[1, 1.6]} camera={{ position: [0, 0, 3.4], fov: 42 }} gl={{ antialias: true, alpha: true }}>
-            <FitCamera radius={prepared.radius} />
-            <ambientLight intensity={1.25} />
-            <Environment preset="city" />
-            <hemisphereLight intensity={0.85} groundColor="#131a32" />
-            <directionalLight intensity={1.35} position={[2.4, 2.8, 2.9]} />
-            <directionalLight intensity={0.66} position={[-2.3, -1.7, -2.4]} />
+          <Canvas
+            dpr={isLowMemoryMode ? [0.75, 1] : [1, 1.6]}
+            camera={{ position: [0, 0, 3.4], fov: 42 }}
+            gl={{
+              antialias: !isLowMemoryMode,
+              alpha: true,
+              powerPreference: isLowMemoryMode ? "low-power" : "high-performance"
+            }}
+          >
             <Suspense fallback={null}>
-              <GlbModel
-                prepared={prepared}
+              <GlbScene
+                modelPath={modelPath}
+                scale={finalScale}
                 autoRotateSpeed={autoRotateSpeed}
                 rotationTargetRef={rotationTargetRef}
                 draggingRef={draggingRef}
+                isLowMemoryMode={isLowMemoryMode}
               />
             </Suspense>
           </Canvas>

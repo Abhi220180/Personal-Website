@@ -26,7 +26,7 @@ const RB_SPAWN_PADDING = 20;
 
 function getInitialRbPosition(width: number, height: number) {
   const x = Math.max(12, width - RB_CARD_WIDTH - RB_SPAWN_PADDING);
-  const y = Math.max(8, Math.min(height - RB_CARD_HEIGHT - 12, 20));
+  const y = width >= 1024 ? -62 : width >= 768 ? -22 : Math.max(8, Math.min(height - RB_CARD_HEIGHT - 12, 20));
   return { x, y };
 }
 

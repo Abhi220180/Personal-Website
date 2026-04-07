@@ -23,7 +23,7 @@ export function HeroSection() {
               alt="Abhinav Gummadi profile picture"
               width={400}
               height={400}
-              className="h-[140px] w-[140px] rounded-full border border-white/45 object-cover shadow-[0_8px_24px_rgba(0,0,0,0.35)] md:h-[240px] md:w-[240px]"
+              className="h-[84px] w-[84px] rounded-full border border-white/45 object-cover shadow-[0_8px_24px_rgba(0,0,0,0.35)] md:h-[150px] md:w-[150px] lg:h-[170px] lg:w-[170px]"
               priority
             />
           </div>

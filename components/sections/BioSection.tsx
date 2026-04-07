@@ -22,6 +22,13 @@ const customStyleForWidth = (width: number) => ({
 
 const RB_CARD_WIDTH = 320;
 const RB_CARD_HEIGHT = 205;
+const RB_SPAWN_PADDING = 20;
+
+function getInitialRbPosition(width: number, height: number) {
+  const x = Math.max(12, width - RB_CARD_WIDTH - RB_SPAWN_PADDING);
+  const y = Math.max(8, Math.min(height - RB_CARD_HEIGHT - 12, 20));
+  return { x, y };
+}
 
 export function AboutSection() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -31,10 +38,7 @@ export function AboutSection() {
 
   const handleLayout = useCallback(({ width, height }: { width: number; height: number }) => {
     if (!isReady) {
-      setPos({
-        x: width / 2 - RB_CARD_WIDTH / 2,
-        y: height / 2 - RB_CARD_HEIGHT / 2
-      });
+      setPos(getInitialRbPosition(width, height));
       setIsReady(true);
     }
   }, [isReady]);
@@ -109,7 +113,7 @@ export function AboutSection() {
             />
           </div>
 
-          <div className="mt-8 xl:mt-0 xl:max-w-3xl">
+          <div className="mt-8 w-full max-w-4xl xl:mt-0 xl:mx-auto">
             <p className="mb-4 font-['Press_Start_2P'] text-[10px] uppercase tracking-[0.09em] text-white/90">
               Drag The Red Bull Into Text
             </p>
@@ -120,7 +124,7 @@ export function AboutSection() {
                 onLayout={handleLayout}
                 styleForWidth={customStyleForWidth}
                 fillSplitSpans
-                className="w-full text-white/90"
+                className="mx-auto w-full max-w-3xl text-white/90"
               />
 
               <div

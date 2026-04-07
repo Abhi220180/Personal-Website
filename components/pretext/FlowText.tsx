@@ -283,7 +283,7 @@ export function FlowText({
 
     const lines: FlowLine[] = [];
     let y = 0;
-    const proseRightInset = 390;
+    const proseRightInset = Math.min(390, Math.floor(width * 0.33));
     const maxLineWidth = Math.max(minLineWidth, width - proseRightInset);
 
     for (let paragraphIndex = 0; paragraphIndex < preparedParagraphs.length; paragraphIndex += 1) {

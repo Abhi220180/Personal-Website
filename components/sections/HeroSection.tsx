@@ -43,7 +43,7 @@ export function HeroSection() {
 
         <div className="absolute left-6 top-8 z-20 md:left-10 md:top-10">
           <Image
-            src="/images/website%20profile%20pic.jpg"
+            src="/images/website-profile-pic.jpg"
             alt="Abhinav Gummadi profile picture"
             width={400}
             height={400}

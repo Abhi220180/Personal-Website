@@ -4,6 +4,7 @@ import { GlbOrbitCard } from "@/components/three/GlbOrbitCard";
 import { aboutParagraphs } from "@/lib/content";
 
 import { FlowText } from "@/components/pretext/FlowText";
+import type React from "react";
 import { useCallback, useRef, useState } from "react";
 
 const customStyleForWidth = (width: number) => ({

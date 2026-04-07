@@ -1,6 +1,11 @@
 import { IcoSphereEmbed } from "@/components/three/IcoSphereEmbed";
-import { GlbOrbitCard } from "@/components/three/GlbOrbitCard";
 import type { SphereNode } from "@/lib/types";
+import dynamic from "next/dynamic";
+
+const GlbOrbitCard = dynamic(
+  () => import("@/components/three/GlbOrbitCard").then((module) => module.GlbOrbitCard),
+  { ssr: false }
+);
 
 const projectSphereNodes: SphereNode[] = [
   {

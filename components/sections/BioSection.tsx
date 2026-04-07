@@ -1,11 +1,16 @@
 "use client";
 
-import { GlbOrbitCard } from "@/components/three/GlbOrbitCard";
 import { aboutParagraphs } from "@/lib/content";
 
 import { FlowText } from "@/components/pretext/FlowText";
+import dynamic from "next/dynamic";
 import type React from "react";
 import { useCallback, useRef, useState } from "react";
+
+const GlbOrbitCard = dynamic(
+  () => import("@/components/three/GlbOrbitCard").then((module) => module.GlbOrbitCard),
+  { ssr: false }
+);
 
 const customStyleForWidth = (width: number) => ({
   fontFamily: '"Press Start 2P", monospace',

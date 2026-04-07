@@ -1,9 +1,14 @@
 "use client";
 
-import { GlbOrbitCard } from "@/components/three/GlbOrbitCard";
 import { heroNameLine, heroPlanetLinks, heroSchoolLine } from "@/lib/content";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+
+const GlbOrbitCard = dynamic(
+  () => import("@/components/three/GlbOrbitCard").then((module) => module.GlbOrbitCard),
+  { ssr: false }
+);
 
 export function HeroSection() {
   const router = useRouter();

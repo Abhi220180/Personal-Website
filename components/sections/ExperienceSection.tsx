@@ -17,11 +17,9 @@ const experienceSphereNodes: SphereNode[] = [
     iconSrc: "/images/nodes/linkedin.png",
     color: "#0a66c2",
     ringColor: "#004182",
-    summary: "Professional timeline and public profile with roles, projects, and technical growth highlights.",
+    summary: "Just my linkedin profile :)",
     highlights: [
-      "Technical communication and resume framing",
-      "Professional networking strategy",
-      "Experience documentation and role storytelling"
+      "Just my linkedin profile :)"
     ],
     anchorIndex: 0
   },
@@ -29,7 +27,7 @@ const experienceSphereNodes: SphereNode[] = [
     id: "nova",
     label: "NOVA",
     category: "Experience",
-    roleName: "Team Member",
+    roleName: "Vehicle Engineer",
     href: "https://nova-utd.github.io/",
     iconSrc: "/images/nodes/nova.jpg",
     color: "#f97316",
@@ -37,9 +35,9 @@ const experienceSphereNodes: SphereNode[] = [
     summary:
       "Collaborated in a student engineering environment on hands-on technical initiatives and team execution.",
     highlights: [
-      "Cross-functional team collaboration",
-      "Applied software + hardware problem solving",
-      "Project planning and delivery discipline"
+      "Built CARLA-based pedestrian-detection workflows using LiDAR point-cloud data to support simulation-driven perception testing for NOVA's open-source self-driving platform",
+      "Integrated an NVIDIA AGX compute module with ZED camera systems to enable onboard sensor processing and embedded perception workloads",
+      "Used CUDA on NVIDIA hardware to support GPU-accelerated perception workloads in real-time autonomous driving experiments"
     ],
     anchorIndex: 4
   },
@@ -55,9 +53,9 @@ const experienceSphereNodes: SphereNode[] = [
     summary:
       "Worked in autonomous systems-focused student projects, contributing to practical engineering tasks.",
     highlights: [
-      "Autonomy-focused system thinking",
-      "Rapid prototyping and validation",
-      "Iterative debugging in team settings"
+      "Trained an EfficientNet-based image classifier for traffic sign recognition, achieving 87% validation accuracy using BDD100K and internal data",
+      "Built a two-stage perception pipeline for bounding-box detection and classification, achieving 83 ms camera-to-recognition latency",
+      "Evaluated MATLAB/Simulink sim-to-real generalization across 1,000 images per class, finding only a 1.5% accuracy gap between simulated and real-world traffic sign data"
     ],
     anchorIndex: 8
   },

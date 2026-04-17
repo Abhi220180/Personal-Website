@@ -17,9 +17,9 @@ const IcoSphereEmbed = dynamic(
 
 interface LazyIcoSphereEmbedProps {
   nodes: SphereNode[];
+  onHoverNodeChange?: (node: SphereNode | null) => void;
 }
 
-export function LazyIcoSphereEmbed({ nodes }: LazyIcoSphereEmbedProps) {
-  return <IcoSphereEmbed nodes={nodes} />;
+export function LazyIcoSphereEmbed({ nodes, onHoverNodeChange }: LazyIcoSphereEmbedProps) {
+  return <IcoSphereEmbed nodes={nodes} onHoverNodeChange={onHoverNodeChange} />;
 }
-

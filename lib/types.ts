@@ -11,10 +11,13 @@ export interface SphereNode {
   id: string;
   label: string;
   category: SphereCategory;
+  roleName?: string;
   href: string;
   iconSrc?: string;
   color?: string;
   ringColor?: string;
+  summary?: string;
+  highlights?: string[];
   anchorIndex: number;
 }
 
@@ -32,4 +35,3 @@ export interface HeroPlanetLink {
   description: string;
   scale?: number;
 }
-

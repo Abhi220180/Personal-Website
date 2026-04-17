@@ -15,6 +15,7 @@ import * as THREE from "three";
 
 interface IcoSphereEmbedProps {
   nodes: SphereNode[];
+  onHoverNodeChange?: (node: SphereNode | null) => void;
 }
 
 type MappedNode = SphereNode & {
@@ -379,7 +380,7 @@ function NodePopup({ node, screenX, screenY, onMouseEnter, onMouseLeave, onClick
 
 /* ─── Main wrapper ─── */
 
-export function IcoSphereEmbed({ nodes }: IcoSphereEmbedProps) {
+export function IcoSphereEmbed({ nodes, onHoverNodeChange }: IcoSphereEmbedProps) {
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [screenPositions, setScreenPositions] = useState<ScreenNode[]>([]);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
@@ -454,6 +455,13 @@ export function IcoSphereEmbed({ nodes }: IcoSphereEmbedProps) {
 
   const hoveredNode = nodes.find((n) => n.id === hoveredNodeId);
   const hoveredScreenPos = screenPositions.find((p) => p.id === hoveredNodeId);
+
+  useEffect(() => {
+    if (!onHoverNodeChange) {
+      return;
+    }
+    onHoverNodeChange(hoveredNode ?? null);
+  }, [hoveredNode, onHoverNodeChange]);
 
   return (
     <div className="relative h-full w-full">

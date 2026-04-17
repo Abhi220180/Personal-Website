@@ -1,4 +1,4 @@
-import { LazyIcoSphereEmbed } from "@/components/three/LazyIcoSphereEmbed";
+import { InteractiveNodeExplorer } from "@/components/sections/InteractiveNodeExplorer";
 import type { SphereNode } from "@/lib/types";
 import dynamic from "next/dynamic";
 
@@ -16,6 +16,13 @@ const projectSphereNodes: SphereNode[] = [
     iconSrc: "/images/nodes/black-hole-engine.png",
     color: "#000000",
     ringColor: "#f97316",
+    summary:
+      "Built a graphics-heavy sandbox focused on simulation visuals and interactive rendering behavior.",
+    highlights: [
+      "C++ architecture and rendering pipeline work",
+      "Interactive systems design and debugging",
+      "Performance-focused engine iteration"
+    ],
     anchorIndex: 4
   },
   {
@@ -26,6 +33,13 @@ const projectSphereNodes: SphereNode[] = [
     iconSrc: "/images/personalwebsiteicon.png",
     color: "#ef4444",
     ringColor: "#991b1b",
+    summary:
+      "Designed and shipped this interactive portfolio with custom 3D navigation and responsive editorial layout.",
+    highlights: [
+      "Next.js + TypeScript application structure",
+      "React Three Fiber scene composition",
+      "Frontend performance and caching optimization"
+    ],
     anchorIndex: 12
   },
   {
@@ -36,6 +50,13 @@ const projectSphereNodes: SphereNode[] = [
     iconSrc: "/images/nodes/Tsunoda_Red_Bull_041125.webp",
     color: "#1d4ed8",
     ringColor: "#dc2626",
+    summary:
+      "Contributed to a reinforcement-learning-based F1 simulator workflow with model training experimentation.",
+    highlights: [
+      "Python + ML experimentation pipeline",
+      "Simulation environment integration",
+      "Result analysis and iteration"
+    ],
     anchorIndex: 8
   },
   {
@@ -46,6 +67,12 @@ const projectSphereNodes: SphereNode[] = [
     iconSrc: "/images/githubicon.svg",
     color: "#a855f7",
     ringColor: "#581c87",
+    summary: "Central profile for projects, code samples, and development activity history.",
+    highlights: [
+      "Version control workflow",
+      "Project documentation and code organization",
+      "Open-source collaboration habits"
+    ],
     anchorIndex: 0
   }
 ];
@@ -67,8 +94,8 @@ export function ProjectsSection() {
             />
           </div>
 
-          <div className="mt-8 xl:mt-0 xl:max-w-3xl">
-            <article className="mb-6 border border-white/30 bg-black/30 p-5 backdrop-blur-sm">
+          <div className="mt-8 xl:mt-0 xl:max-w-none">
+            <article className="mb-6 border border-white/30 bg-black/30 p-5 backdrop-blur-sm xl:max-w-[560px]">
               <h3 className="font-['Press_Start_2P'] text-sm uppercase tracking-[0.09em] text-white">
                 How to use Isosphere:
               </h3>
@@ -78,9 +105,10 @@ export function ProjectsSection() {
               </p>
             </article>
 
-            <div className="mx-auto aspect-square w-full max-w-[560px]">
-              <LazyIcoSphereEmbed nodes={projectSphereNodes} />
-            </div>
+            <InteractiveNodeExplorer
+              nodes={projectSphereNodes}
+              panelHeading="Project Details"
+            />
           </div>
         </div>
       </div>

@@ -28,6 +28,35 @@ type ScreenNode = {
   visible: boolean;
 };
 
+function hexToRgb(hex: string) {
+  const cleaned = hex.trim();
+  const full = cleaned.length === 4
+    ? `#${cleaned[1]}${cleaned[1]}${cleaned[2]}${cleaned[2]}${cleaned[3]}${cleaned[3]}`
+    : cleaned;
+
+  const match = full.match(/^#([0-9a-fA-F]{6})$/);
+  if (!match) {
+    return null;
+  }
+
+  const value = match[1];
+  return {
+    r: Number.parseInt(value.slice(0, 2), 16),
+    g: Number.parseInt(value.slice(2, 4), 16),
+    b: Number.parseInt(value.slice(4, 6), 16),
+  };
+}
+
+function getReadableTextColor(backgroundHex: string) {
+  const rgb = hexToRgb(backgroundHex);
+  if (!rgb) {
+    return "#ffffff";
+  }
+
+  const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+  return luminance > 0.62 ? "#111827" : "#ffffff";
+}
+
 function getUniqueVertices(geometry: THREE.IcosahedronGeometry): THREE.Vector3[] {
   const positionAttribute = geometry.attributes.position;
   const unique = new Map<string, THREE.Vector3>();
@@ -104,7 +133,7 @@ interface SceneProps {
 
 function Scene({ nodes, hoveredId, onHoverNode, onClickNode, canvasEl, onScreenPositions }: SceneProps) {
   const groupRef = useRef<THREE.Group | null>(null);
-  const { camera, size } = useThree();
+  const { camera } = useThree();
 
   const baseGeometry = useMemo(() => new THREE.IcosahedronGeometry(1.2, 1), []);
   const wireframeGeometry = useMemo(() => new THREE.WireframeGeometry(baseGeometry), [baseGeometry]);
@@ -122,6 +151,13 @@ function Scene({ nodes, hoveredId, onHoverNode, onClickNode, canvasEl, onScreenP
   }, [vertices]);
 
   const mappedNodes = useMemo<MappedNode[]>(() => mapNodesEvenly(nodes, vertices), [nodes, vertices]);
+  const mappedNodeById = useMemo(() => {
+    const map = new Map<string, MappedNode>();
+    for (const node of mappedNodes) {
+      map.set(node.id, node);
+    }
+    return map;
+  }, [mappedNodes]);
 
   const tempVec = useMemo(() => new THREE.Vector3(), []);
   const cameraDir = useMemo(() => new THREE.Vector3(), []);
@@ -137,36 +173,43 @@ function Scene({ nodes, hoveredId, onHoverNode, onClickNode, canvasEl, onScreenP
       return;
     }
 
+    if (!hoveredId) {
+      return;
+    }
+
+    const hoveredNode = mappedNodeById.get(hoveredId);
+    if (!hoveredNode) {
+      return;
+    }
+
     const rect = canvasEl.getBoundingClientRect();
 
-    const positions: ScreenNode[] = mappedNodes.map((node) => {
-      tempVec.copy(node.position);
-      groupRef.current!.localToWorld(tempVec);
+    tempVec.copy(hoveredNode.position);
+    groupRef.current!.localToWorld(tempVec);
 
-      /* front-face check: is the node facing the camera? */
-      cameraDir.subVectors(camera.position, tempVec).normalize();
-      const toNodeFromCenter = tempVec.clone().sub(groupRef.current!.position).normalize();
-      const dot = cameraDir.dot(toNodeFromCenter);
-      const isFrontFacing = dot > 0.1;
+    /* front-face check: is the node facing the camera? */
+    cameraDir.subVectors(camera.position, tempVec).normalize();
+    const toNodeFromCenter = tempVec.clone().sub(groupRef.current!.position).normalize();
+    const dot = cameraDir.dot(toNodeFromCenter);
+    const isFrontFacing = dot > 0.1;
 
-      /* project to NDC */
-      tempVec.project(camera);
-      const ndcX = tempVec.x * 0.5 + 0.5;
-      const ndcY = -tempVec.y * 0.5 + 0.5;
+    /* project to NDC */
+    tempVec.project(camera);
+    const ndcX = tempVec.x * 0.5 + 0.5;
+    const ndcY = -tempVec.y * 0.5 + 0.5;
 
-      /* convert to page coordinates */
-      const pageX = rect.left + ndcX * rect.width + window.scrollX;
-      const pageY = rect.top + ndcY * rect.height + window.scrollY;
+    /* convert to page coordinates */
+    const pageX = rect.left + ndcX * rect.width + window.scrollX;
+    const pageY = rect.top + ndcY * rect.height + window.scrollY;
 
-      return {
-        id: node.id,
+    onScreenPositions([
+      {
+        id: hoveredNode.id,
         screenX: pageX,
         screenY: pageY,
         visible: isFrontFacing,
-      };
-    });
-
-    onScreenPositions(positions);
+      },
+    ]);
   });
 
   return (
@@ -260,6 +303,9 @@ interface PopupProps {
 }
 
 function NodePopup({ node, screenX, screenY, onMouseEnter, onMouseLeave, onClick }: PopupProps) {
+  const chipBackground = node.color ?? "#525252";
+  const chipTextColor = getReadableTextColor(chipBackground);
+
   return createPortal(
     <div
       style={{
@@ -301,23 +347,26 @@ function NodePopup({ node, screenX, screenY, onMouseEnter, onMouseLeave, onClick
               style={
                 node.id === "linkedin"
                   ? { objectPosition: "left center" }
+                  : node.id === "amd"
+                    ? { transform: "translateX(2px) scale(0.9)", transformOrigin: "center center" }
                   : undefined
               }
               draggable={false}
             />
           ) : (
             <div
-              className="flex h-[72px] w-[72px] items-center justify-center text-lg font-bold text-white"
-              style={{ backgroundColor: node.color ?? "#525252" }}
+              className="flex h-[72px] w-[72px] items-center justify-center text-lg font-bold"
+              style={{ backgroundColor: chipBackground, color: chipTextColor }}
             >
               {node.label.charAt(0)}
             </div>
           )}
         </div>
         <div
-          className="mt-1.5 whitespace-nowrap rounded-md px-2.5 py-1 text-center text-[10px] font-semibold tracking-wide text-white shadow-sm"
+          className="mt-1.5 whitespace-nowrap rounded-md px-2.5 py-1 text-center text-[10px] font-semibold tracking-wide shadow-sm"
           style={{
-            backgroundColor: node.color ?? "#525252",
+            backgroundColor: chipBackground,
+            color: chipTextColor,
           }}
         >
           {node.label}

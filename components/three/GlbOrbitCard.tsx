@@ -300,6 +300,7 @@ export function GlbOrbitCard({
     y: 0 
   });
   const [isVisible, setIsVisible] = useState(false);
+  const [isNearViewport, setIsNearViewport] = useState(false);
   const [isLowMemoryMode, setIsLowMemoryMode] = useState(false);
 
   const resetPointerState = () => {
@@ -328,6 +329,32 @@ export function GlbOrbitCard({
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          setIsNearViewport(entry.isIntersecting);
+        }
+      },
+      { root: null, rootMargin: "220px 0px", threshold: 0.01 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isNearViewport) {
+      return;
+    }
+    useGLTF.preload(modelPath);
+  }, [isNearViewport, modelPath]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(pointer: coarse)");
@@ -419,6 +446,7 @@ export function GlbOrbitCard({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endPointer}
+      onPointerEnter={() => useGLTF.preload(modelPath)}
       onPointerCancel={(event) => {
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId);
@@ -434,6 +462,7 @@ export function GlbOrbitCard({
           onActivate();
         }
       }}
+      onFocus={() => useGLTF.preload(modelPath)}
     >
       <div className="relative aspect-square h-full max-h-full max-w-full overflow-visible transition-transform duration-300 group-hover:scale-[1.02]">
         {isVisible ? (

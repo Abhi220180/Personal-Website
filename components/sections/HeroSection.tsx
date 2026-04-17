@@ -1,9 +1,10 @@
 "use client";
 
-import { heroNameLine, heroPlanetLinks, heroSchoolLine } from "@/lib/content";
+import { allModelPaths, heroNameLine, heroPlanetLinks, heroSchoolLine } from "@/lib/content";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const GlbOrbitCard = dynamic(
   () => import("@/components/three/GlbOrbitCard").then((module) => module.GlbOrbitCard),
@@ -12,6 +13,35 @@ const GlbOrbitCard = dynamic(
 
 export function HeroSection() {
   const router = useRouter();
+
+  useEffect(() => {
+    const connection = (
+      navigator as Navigator & {
+        connection?: {
+          saveData?: boolean;
+          effectiveType?: string;
+        };
+      }
+    ).connection;
+
+    if (
+      connection?.saveData ||
+      connection?.effectiveType === "2g" ||
+      connection?.effectiveType === "slow-2g"
+    ) {
+      return;
+    }
+
+    const preload = async () => {
+      const { useGLTF } = await import("@react-three/drei");
+      for (const modelPath of allModelPaths) {
+        useGLTF.preload(modelPath);
+      }
+    };
+
+    const timeoutId = window.setTimeout(preload, 650);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   return (
     <section id="top" className="relative min-h-[92vh] section-rule">

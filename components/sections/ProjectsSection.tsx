@@ -1,4 +1,4 @@
-import { IcoSphereEmbed } from "@/components/three/IcoSphereEmbed";
+import { LazyIcoSphereEmbed } from "@/components/three/LazyIcoSphereEmbed";
 import type { SphereNode } from "@/lib/types";
 import dynamic from "next/dynamic";
 
@@ -79,7 +79,7 @@ export function ProjectsSection() {
             </article>
 
             <div className="mx-auto aspect-square w-full max-w-[560px]">
-              <IcoSphereEmbed nodes={projectSphereNodes} />
+              <LazyIcoSphereEmbed nodes={projectSphereNodes} />
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { IcoSphereEmbed } from "@/components/three/IcoSphereEmbed";
+import { LazyIcoSphereEmbed } from "@/components/three/LazyIcoSphereEmbed";
 import type { SphereNode } from "@/lib/types";
 import dynamic from "next/dynamic";
 
@@ -37,6 +37,26 @@ const experienceSphereNodes: SphereNode[] = [
     color: "#c5050c",
     ringColor: "#9b0000",
     anchorIndex: 8
+  },
+  {
+    id: "amd",
+    label: "AMD",
+    category: "Experience",
+    href: "https://www.amd.com/",
+    iconSrc: "/images/nodes/AMD%20Logo.png",
+    color: "#0b0b0f",
+    ringColor: "#5aaeb5",
+    anchorIndex: 12
+  },
+  {
+    id: "ibm",
+    label: "IBM",
+    category: "Experience",
+    href: "https://www.ibm.com/",
+    iconSrc: "/images/nodes/IBM%20Logo.png",
+    color: "#f8f9fb",
+    ringColor: "#4a84be",
+    anchorIndex: 16
   }
 ];
 
@@ -69,7 +89,7 @@ export function ExperienceSection() {
             </article>
 
             <div className="mx-auto aspect-square w-full max-w-[560px]">
-              <IcoSphereEmbed nodes={experienceSphereNodes} />
+              <LazyIcoSphereEmbed nodes={experienceSphereNodes} />
             </div>
           </div>
         </div>

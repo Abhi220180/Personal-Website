@@ -9,21 +9,6 @@ const GlbOrbitCard = dynamic(
 
 const experienceSphereNodes: SphereNode[] = [
   {
-    id: "linkedin",
-    label: "LinkedIn",
-    category: "Experience",
-    roleName: "Professional Profile",
-    href: "https://www.linkedin.com/in/abhinavgummadi/",
-    iconSrc: "/images/nodes/linkedin.png",
-    color: "#0a66c2",
-    ringColor: "#004182",
-    summary: "Just my linkedin profile :)",
-    highlights: [
-      "Just my linkedin profile :)"
-    ],
-    anchorIndex: 0
-  },
-  {
     id: "nova",
     label: "NOVA",
     category: "Experience",

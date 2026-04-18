@@ -56,6 +56,51 @@ export function HeroSection() {
               className="h-[84px] w-[84px] rounded-full border border-white/45 object-cover shadow-[0_8px_24px_rgba(0,0,0,0.35)] md:h-[150px] md:w-[150px] lg:h-[170px] lg:w-[170px]"
               priority
             />
+            {/* Social icons below profile picture */}
+            <div className="mt-2.5 flex items-center justify-center gap-3">
+              {/* LinkedIn icon */}
+              <a
+                href="https://www.linkedin.com/in/abhinavgummadi/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn profile"
+                className="group relative flex items-center justify-center transition-transform duration-150 hover:scale-110 active:scale-95"
+              >
+                <Image
+                  src="/images/8bitlinkedin.png"
+                  alt="LinkedIn"
+                  width={32}
+                  height={32}
+                  className="h-[28px] w-[28px] object-contain image-rendering-pixelated md:h-[36px] md:w-[36px]"
+                  style={{ imageRendering: "pixelated" }}
+                />
+              </a>
+              {/* Email icon with hover tooltip */}
+              <div className="group relative flex items-center justify-center">
+                <button
+                  aria-label="Email address"
+                  className="flex items-center justify-center transition-transform duration-150 hover:scale-110 active:scale-95"
+                >
+                  <Image
+                    src="/images/8bitmail.png"
+                    alt="Email"
+                    width={32}
+                    height={32}
+                    className="h-[28px] w-[28px] object-contain md:h-[36px] md:w-[36px]"
+                    style={{ imageRendering: "pixelated" }}
+                  />
+                </button>
+                {/* Tooltip */}
+                <div
+                  className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded border border-white/30 bg-black/80 px-2.5 py-1.5 font-['Press_Start_2P'] text-[7px] text-white/90 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 md:text-[8px]"
+                  role="tooltip"
+                >
+                  agummadi@wisc.edu
+                  {/* Tooltip arrow */}
+                  <span className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 border-x-4 border-t-4 border-x-transparent border-t-black/80" />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="shrink-0 md:absolute md:right-10 md:top-10">

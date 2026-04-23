@@ -16,7 +16,7 @@ const IcoSphereEmbed = dynamic(
 );
 
 interface LazyIcoSphereEmbedProps {
-  nodes: SphereNode[];
+  nodes: readonly SphereNode[];
   onHoverNodeChange?: (node: SphereNode | null) => void;
 }
 

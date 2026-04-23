@@ -1,12 +1,10 @@
+import { PageShell } from "@/components/layout/PageShell";
 import { ExperienceSection } from "@/components/sections/ExperienceSection";
-import { PageTopNav } from "@/components/ui/PageTopNav";
 
 export default function ExperiencePage() {
   return (
-    <main className="relative overflow-x-clip text-ink">
-      <PageTopNav />
+    <PageShell withTopNav>
       <ExperienceSection />
-    </main>
+    </PageShell>
   );
 }
-

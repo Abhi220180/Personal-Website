@@ -8,7 +8,7 @@ const links = [
   { href: "/who-i-am", label: "Who I Am" },
   { href: "/projects", label: "Projects" },
   { href: "/experience", label: "Experience" }
-];
+] as const;
 
 export function PageTopNav() {
   const pathname = usePathname();

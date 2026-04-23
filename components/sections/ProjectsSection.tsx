@@ -1,81 +1,6 @@
 import { InteractiveNodeExplorer } from "@/components/sections/InteractiveNodeExplorer";
-import type { SphereNode } from "@/lib/types";
-import dynamic from "next/dynamic";
-
-const GlbOrbitCard = dynamic(
-  () => import("@/components/three/GlbOrbitCard").then((module) => module.GlbOrbitCard),
-  { ssr: false }
-);
-
-const projectSphereNodes: SphereNode[] = [
-  {
-    id: "black-hole-engine",
-    label: "Black Hole Engine",
-    category: "Project",
-    href: "https://github.com/Abhi220180/Black-Hole-Engine.git",
-    iconSrc: "/images/nodes/black-hole-engine.png",
-    color: "#000000",
-    ringColor: "#f97316",
-    summary:
-      "Built a graphics-heavy sandbox focused on simulation visuals and interactive rendering behavior.",
-    highlights: [
-      "C++ architecture and rendering pipeline work",
-      "Interactive systems design and debugging",
-      "Performance-focused engine iteration"
-    ],
-    anchorIndex: 4
-  },
-  {
-    id: "personal-website",
-    label: "Personal Website",
-    category: "Project",
-    href: "https://github.com/Abhi220180/Personal-Website.git",
-    iconSrc: "/images/personalwebsiteicon.png",
-    color: "#ef4444",
-    ringColor: "#991b1b",
-    summary:
-      "Designed and shipped this interactive portfolio with custom 3D navigation and responsive editorial layout.",
-    highlights: [
-      "Next.js + TypeScript application structure",
-      "React Three Fiber scene composition",
-      "Frontend performance and caching optimization"
-    ],
-    anchorIndex: 12
-  },
-  {
-    id: "f1-simulator-project",
-    label: "F1 Simulator Project",
-    category: "Project",
-    href: "https://github.com/KushagraBharti/F1-ReinforcementLearning",
-    iconSrc: "/images/nodes/Tsunoda_Red_Bull_041125.webp",
-    color: "#1d4ed8",
-    ringColor: "#dc2626",
-    summary:
-      "Contributed to a reinforcement-learning-based F1 simulator workflow with model training experimentation.",
-    highlights: [
-      "Python + ML experimentation pipeline",
-      "Simulation environment integration",
-      "Result analysis and iteration"
-    ],
-    anchorIndex: 8
-  },
-  {
-    id: "github",
-    label: "GitHub",
-    category: "Project",
-    href: "https://github.com/Abhi220180",
-    iconSrc: "/images/githubicon.svg",
-    color: "#a855f7",
-    ringColor: "#581c87",
-    summary: "Central profile for projects, code samples, and development activity history.",
-    highlights: [
-      "Version control workflow",
-      "Project documentation and code organization",
-      "Open-source collaboration habits"
-    ],
-    anchorIndex: 0
-  }
-];
+import { LazyGlbOrbitCard } from "@/components/three/LazyGlbOrbitCard";
+import { modelPaths, projectSphereNodes } from "@/lib/content";
 
 export function ProjectsSection() {
   return (
@@ -85,8 +10,8 @@ export function ProjectsSection() {
 
         <div className="relative mt-10">
           <div className="flex justify-end xl:absolute xl:right-0 xl:-top-44">
-            <GlbOrbitCard
-              modelPath="/models/shiverburn.glb"
+            <LazyGlbOrbitCard
+              modelPath={modelPaths.projects}
               label="Shiverburn"
               showLabel={false}
               scale={0.95}
@@ -105,10 +30,7 @@ export function ProjectsSection() {
               </p>
             </article>
 
-            <InteractiveNodeExplorer
-              nodes={projectSphereNodes}
-              panelHeading="Project Details"
-            />
+            <InteractiveNodeExplorer nodes={projectSphereNodes} panelHeading="Project Details" />
           </div>
         </div>
       </div>

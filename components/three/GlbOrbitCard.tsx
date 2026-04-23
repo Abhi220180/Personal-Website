@@ -3,8 +3,17 @@
 import { Environment } from "@react-three/drei/core/Environment";
 import { useGLTF } from "@react-three/drei/core/Gltf";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { SkeletonUtils } from "three-stdlib";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MutableRefObject,
+  type PointerEvent
+} from "react";
 import {
   Box3,
   MathUtils,
@@ -15,6 +24,7 @@ import {
   Vector3,
   type Group
 } from "three";
+import { SkeletonUtils } from "three-stdlib";
 
 type PointerPoint = {
   x: number;
@@ -51,7 +61,7 @@ interface GlbSceneProps {
   isLowMemoryMode: boolean;
 }
 
-interface GlbOrbitCardProps {
+export interface GlbOrbitCardProps {
   modelPath: string;
   label: string;
   subtitle?: string;
@@ -62,6 +72,18 @@ interface GlbOrbitCardProps {
   onActivate?: () => void;
   ariaLabel?: string;
 }
+
+const LARGE_MODEL_SCALE_FACTOR = 20;
+const VISIBILITY_OBSERVER_OPTIONS: IntersectionObserverInit = {
+  root: null,
+  rootMargin: "0px 0px",
+  threshold: 0.15
+};
+const NEAR_VIEWPORT_OBSERVER_OPTIONS: IntersectionObserverInit = {
+  root: null,
+  rootMargin: "220px 0px",
+  threshold: 0.01
+};
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
@@ -80,7 +102,6 @@ function hasSkinnedMesh(object: Object3D) {
 }
 
 function cloneForPreview(scene: Object3D) {
-  // Skinned GLBs need SkeletonUtils cloning to preserve bone bindings.
   const clone = hasSkinnedMesh(scene) ? SkeletonUtils.clone(scene) : scene.clone(true);
 
   clone.traverse((node) => {
@@ -89,7 +110,6 @@ function cloneForPreview(scene: Object3D) {
       return;
     }
 
-    // Avoid stale skin bounds causing incorrect culling/fitting.
     skinnedNode.frustumCulled = false;
     skinnedNode.skeleton.update();
   });
@@ -130,54 +150,46 @@ function computeRenderableBounds(object: Object3D) {
   return bounds;
 }
 
-
 function prepareModel(scene: Object3D, scale: number): PreparedModel {
-  // Create a pivot wrapper - the clone sits inside it, offset so the
-  // bounding-box center aligns with the pivot's origin.  Rotation of
-  // the pivot then spins the model around its visual center.
   const pivot = new Object3D();
-
   const clone = cloneForPreview(scene);
 
-  // Reset any root-level transforms the GLB file might carry.
   clone.position.set(0, 0, 0);
   clone.rotation.set(0, 0, 0);
   clone.scale.set(1, 1, 1);
   clone.updateWorldMatrix(true, true);
 
-  // Measure bounding-box center in world space.
   const bbox = computeRenderableBounds(clone);
   const center = bbox.getCenter(new Vector3());
-  if (!Number.isFinite(center.x)) center.set(0, 0, 0);
+  if (!Number.isFinite(center.x)) {
+    center.set(0, 0, 0);
+  }
 
-  // Offset the clone inside the pivot so geometry is centered at origin.
   clone.position.set(-center.x, -center.y, -center.z);
   pivot.add(clone);
   pivot.updateWorldMatrix(true, true);
 
-  // Measure the radius from the pivot origin.
   const bboxAfter = computeRenderableBounds(pivot);
   const sphere = new Sphere();
   bboxAfter.getBoundingSphere(sphere);
   let initialRadius = sphere.radius;
-  
+
   if (!Number.isFinite(initialRadius) || initialRadius < 1e-5 || initialRadius > 100000) {
-    initialRadius = 1; // Fallback for broken bounding boxes
+    initialRadius = 1;
   }
 
-  // Scale the entire pivot to fit the target radius.
   const targetRadius = 1.05;
   const uniformScale = (targetRadius / initialRadius) * scale;
   pivot.scale.set(uniformScale, uniformScale, uniformScale);
   pivot.updateWorldMatrix(true, true);
 
-  // Optional: Remove any forced materials that could mess with PBR.
-  // Re-measure after final scale.
   const finalBbox = computeRenderableBounds(pivot);
   const finalSphere = new Sphere();
   finalBbox.getBoundingSphere(finalSphere);
   let finalRadius = finalSphere.radius;
-  if (!Number.isFinite(finalRadius) || finalRadius < 1e-5) finalRadius = targetRadius * scale;
+  if (!Number.isFinite(finalRadius) || finalRadius < 1e-5) {
+    finalRadius = targetRadius * scale;
+  }
 
   return {
     object: pivot,
@@ -192,11 +204,11 @@ function FitCamera({ radius }: FitCameraProps) {
     const cam = camera as PerspectiveCamera;
     const fovRad = (cam.fov * Math.PI) / 180;
     const distance = (radius * 1.15) / Math.tan(fovRad * 0.5);
-    const nearPlane = Math.max(0.1, distance - radius * 2.2);
-    const farPlane = distance + radius * 2.2;
+    const nearPlane = Math.max(0.08, distance - radius * 1.8);
+    const farPlane = distance + radius * 2.6;
 
     cam.position.set(0, 0, distance);
-    cam.near = Math.min(nearPlane, distance - 0.05);
+    cam.near = Math.min(nearPlane, Math.max(0.08, distance - 0.05));
     cam.far = Math.max(farPlane, cam.near + 1);
     cam.lookAt(0, 0, 0);
     cam.updateProjectionMatrix();
@@ -286,13 +298,14 @@ export function GlbOrbitCard({
   onActivate,
   ariaLabel
 }: GlbOrbitCardProps) {
-  const isRb16 = modelPath.includes("rb16");
-  const isShiverburn = modelPath.includes("shiverburn");
-  const isBonefin = modelPath.includes("bonefin");
-  const isMeltymonster = modelPath.includes("meltymonster");
-  const needsLargeScaleCompensation = isBonefin || isMeltymonster;
+  const normalizedModelPath = modelPath.toLowerCase();
+  const isRb16 = normalizedModelPath.includes("rb16");
+  const isShiverburn = normalizedModelPath.includes("shiverburn");
+  const needsLargeScaleCompensation =
+    normalizedModelPath.includes("bonefin") || normalizedModelPath.includes("meltymonster");
 
-  const finalScale = (isRb16 ? scale : scale * 1.8) * (needsLargeScaleCompensation ? 20 : 1);
+  const finalScale =
+    (isRb16 ? scale : scale * 1.8) * (needsLargeScaleCompensation ? LARGE_MODEL_SCALE_FACTOR : 1);
 
   const containerRef = useRef<HTMLButtonElement | null>(null);
   const pointerStartRef = useRef<PointerPoint | null>(null);
@@ -302,37 +315,18 @@ export function GlbOrbitCard({
   const draggingRef = useRef(false);
   const rotationTargetRef = useRef<RotationTarget>({
     x: isShiverburn ? Math.PI / 6 : needsLargeScaleCompensation ? Math.PI / 9 : 0,
-    y: 0 
+    y: 0
   });
   const [isVisible, setIsVisible] = useState(false);
   const [isNearViewport, setIsNearViewport] = useState(false);
   const [isLowMemoryMode, setIsLowMemoryMode] = useState(false);
 
-  const resetPointerState = () => {
+  const resetPointerState = useCallback(() => {
     draggingRef.current = false;
     pointerStartRef.current = null;
     pointerLastRef.current = null;
     activePointerIdRef.current = null;
     pointerTypeRef.current = null;
-  };
-
-  useEffect(() => {
-    const node = containerRef.current;
-    if (!node) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          setIsVisible(entry.isIntersecting);
-        }
-      },
-      { root: null, rootMargin: "0px 0px", threshold: 0.15 }
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -341,17 +335,24 @@ export function GlbOrbitCard({
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          setIsNearViewport(entry.isIntersecting);
-        }
-      },
-      { root: null, rootMargin: "220px 0px", threshold: 0.01 }
-    );
+    const visibilityObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        setIsVisible(entry.isIntersecting);
+      }
+    }, VISIBILITY_OBSERVER_OPTIONS);
+    const nearViewportObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        setIsNearViewport(entry.isIntersecting);
+      }
+    }, NEAR_VIEWPORT_OBSERVER_OPTIONS);
 
-    observer.observe(node);
-    return () => observer.disconnect();
+    visibilityObserver.observe(node);
+    nearViewportObserver.observe(node);
+
+    return () => {
+      visibilityObserver.disconnect();
+      nearViewportObserver.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -375,7 +376,7 @@ export function GlbOrbitCard({
     }
   }, []);
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+  const handlePointerDown = useCallback((event: PointerEvent<HTMLButtonElement>) => {
     if (activePointerIdRef.current !== null) {
       return;
     }
@@ -385,13 +386,17 @@ export function GlbOrbitCard({
     pointerStartRef.current = { x: event.clientX, y: event.clientY };
     pointerLastRef.current = { x: event.clientX, y: event.clientY };
     draggingRef.current = true;
-    event.currentTarget.setPointerCapture(event.pointerId);
+
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {}
+
     if (event.pointerType === "touch") {
       event.preventDefault();
     }
-  };
+  }, []);
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+  const handlePointerMove = useCallback((event: PointerEvent<HTMLButtonElement>) => {
     if (
       !draggingRef.current ||
       !pointerLastRef.current ||
@@ -414,33 +419,64 @@ export function GlbOrbitCard({
     const pitchSensitivity = isTouch ? 0.014 : 0.008;
 
     rotationTargetRef.current.y += dx * yawSensitivity;
-    rotationTargetRef.current.x = clamp(rotationTargetRef.current.x + dy * pitchSensitivity, -0.9, 0.9);
-  };
+    rotationTargetRef.current.x = clamp(
+      rotationTargetRef.current.x + dy * pitchSensitivity,
+      -0.9,
+      0.9
+    );
+  }, []);
 
-  const endPointer = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (activePointerIdRef.current !== event.pointerId) {
-      return;
-    }
+  const endPointer = useCallback(
+    (event: PointerEvent<HTMLButtonElement>) => {
+      if (activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
 
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
 
-    if (!onActivate || !pointerStartRef.current) {
+      if (!onActivate || !pointerStartRef.current) {
+        resetPointerState();
+        return;
+      }
+
+      const dx = event.clientX - pointerStartRef.current.x;
+      const dy = event.clientY - pointerStartRef.current.y;
+      const tapThreshold = pointerTypeRef.current === "touch" ? 16 : 7;
+
+      if (Math.hypot(dx, dy) < tapThreshold) {
+        onActivate();
+      }
+
       resetPointerState();
-      return;
-    }
+    },
+    [onActivate, resetPointerState]
+  );
 
-    const dx = event.clientX - pointerStartRef.current.x;
-    const dy = event.clientY - pointerStartRef.current.y;
-    const tapThreshold = pointerTypeRef.current === "touch" ? 16 : 7;
+  const handlePointerCancel = useCallback(
+    (event: PointerEvent<HTMLButtonElement>) => {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      resetPointerState();
+    },
+    [resetPointerState]
+  );
 
-    if (Math.hypot(dx, dy) < tapThreshold) {
-      onActivate();
-    }
+  const handleKeyboardActivate = useCallback(
+    (event: KeyboardEvent<HTMLButtonElement>) => {
+      if ((event.key === "Enter" || event.key === " ") && onActivate) {
+        event.preventDefault();
+        onActivate();
+      }
+    },
+    [onActivate]
+  );
 
-    resetPointerState();
-  };
+  const preloadModel = useCallback(() => {
+    useGLTF.preload(modelPath);
+  }, [modelPath]);
 
   return (
     <button
@@ -451,23 +487,11 @@ export function GlbOrbitCard({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endPointer}
-      onPointerEnter={() => useGLTF.preload(modelPath)}
-      onPointerCancel={(event) => {
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-          event.currentTarget.releasePointerCapture(event.pointerId);
-        }
-        resetPointerState();
-      }}
-      onLostPointerCapture={() => {
-        resetPointerState();
-      }}
-      onKeyDown={(event) => {
-        if ((event.key === "Enter" || event.key === " ") && onActivate) {
-          event.preventDefault();
-          onActivate();
-        }
-      }}
-      onFocus={() => useGLTF.preload(modelPath)}
+      onPointerEnter={preloadModel}
+      onPointerCancel={handlePointerCancel}
+      onLostPointerCapture={resetPointerState}
+      onKeyDown={handleKeyboardActivate}
+      onFocus={preloadModel}
     >
       <div className="relative aspect-square h-full max-h-full max-w-full overflow-visible transition-transform duration-300 group-hover:scale-[1.02]">
         {isVisible ? (
@@ -477,7 +501,7 @@ export function GlbOrbitCard({
             gl={{
               antialias: !isLowMemoryMode,
               alpha: true,
-              logarithmicDepthBuffer: true,
+              logarithmicDepthBuffer: !isLowMemoryMode,
               powerPreference: isLowMemoryMode ? "low-power" : "high-performance"
             }}
           >

@@ -1,16 +1,10 @@
 "use client";
 
-import { aboutParagraphs } from "@/lib/content";
-
 import { FlowText } from "@/components/pretext/FlowText";
-import dynamic from "next/dynamic";
+import { LazyGlbOrbitCard } from "@/components/three/LazyGlbOrbitCard";
+import { aboutParagraphs, modelPaths } from "@/lib/content";
 import type React from "react";
-import { useCallback, useRef, useState } from "react";
-
-const GlbOrbitCard = dynamic(
-  () => import("@/components/three/GlbOrbitCard").then((module) => module.GlbOrbitCard),
-  { ssr: false }
-);
+import { useCallback, useMemo, useRef, useState } from "react";
 
 const customStyleForWidth = (width: number) => ({
   fontFamily: '"Press Start 2P", monospace',
@@ -86,16 +80,19 @@ export function AboutSection() {
     }
   };
 
-  const obstacles = [
-    {
-      kind: "rect" as const,
-      left: pos.x + 108,
-      top: pos.y + 84,
-      right: pos.x + 224,
-      bottom: pos.y + 136,
-      padding: 8
-    }
-  ];
+  const obstacles = useMemo(
+    () => [
+      {
+        kind: "rect" as const,
+        left: pos.x + 108,
+        top: pos.y + 84,
+        right: pos.x + 224,
+        bottom: pos.y + 136,
+        padding: 8
+      }
+    ],
+    [pos.x, pos.y]
+  );
 
   return (
     <section id="who-i-am" className="section-rule">
@@ -104,8 +101,8 @@ export function AboutSection() {
 
         <div className="relative mt-10">
           <div className="flex justify-end xl:absolute xl:right-0 xl:-top-44">
-            <GlbOrbitCard
-              modelPath="/models/cosmic-cove.glb"
+            <LazyGlbOrbitCard
+              modelPath={modelPaths.whoIAm}
               label="Cosmic Cove"
               showLabel={false}
               scale={1.02}
@@ -140,8 +137,8 @@ export function AboutSection() {
                 onPointerCancel={handlePointerUp}
               >
                 <div className="absolute inset-0 z-20" />
-                <GlbOrbitCard
-                  modelPath="/models/rb16.glb"
+                <LazyGlbOrbitCard
+                  modelPath={modelPaths.rb16}
                   label="RB16"
                   showLabel={false}
                   scale={0.84}

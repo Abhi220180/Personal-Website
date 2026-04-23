@@ -55,7 +55,7 @@ type LayoutResult = {
 };
 
 interface FlowTextProps {
-  paragraphs: string[];
+  paragraphs: readonly string[];
   className?: string;
   paragraphGap?: number;
   minLineWidth?: number;
@@ -218,7 +218,8 @@ export function FlowText({
       return;
     }
     const update = () => {
-      setWidth(Math.floor(node.getBoundingClientRect().width));
+      const nextWidth = Math.floor(node.getBoundingClientRect().width);
+      setWidth((currentWidth) => (currentWidth === nextWidth ? currentWidth : nextWidth));
     };
     update();
     const observer = new ResizeObserver(update);

@@ -1,15 +1,10 @@
 "use client";
 
+import { LazyGlbOrbitCard } from "@/components/three/LazyGlbOrbitCard";
 import { allModelPaths, heroNameLine, heroPlanetLinks, heroSchoolLine } from "@/lib/content";
 import Image from "next/image";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-
-const GlbOrbitCard = dynamic(
-  () => import("@/components/three/GlbOrbitCard").then((module) => module.GlbOrbitCard),
-  { ssr: false }
-);
 
 export function HeroSection() {
   const router = useRouter();
@@ -78,6 +73,7 @@ export function HeroSection() {
               {/* Email icon with hover tooltip */}
               <div className="group relative flex items-center justify-center">
                 <button
+                  type="button"
                   aria-label="Email address"
                   className="flex items-center justify-center transition-transform duration-150 hover:scale-110 active:scale-95"
                 >
@@ -136,7 +132,7 @@ export function HeroSection() {
 
         <div className="mt-8 grid gap-6 sm:grid-cols-3 md:mt-auto md:gap-7">
           {heroPlanetLinks.map((planet) => (
-            <GlbOrbitCard
+            <LazyGlbOrbitCard
               key={planet.id}
               modelPath={planet.modelPath}
               label={planet.label}

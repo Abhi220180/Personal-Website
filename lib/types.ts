@@ -1,12 +1,5 @@
 export type SphereCategory = "Project" | "Experience" | "Club" | "Social";
 
-export interface HeroCopy {
-  kicker: string;
-  headline: string;
-  aside: string;
-  subline: string;
-}
-
 export interface SphereNode {
   id: string;
   label: string;
@@ -17,14 +10,8 @@ export interface SphereNode {
   color?: string;
   ringColor?: string;
   summary?: string;
-  highlights?: string[];
+  highlights?: readonly string[];
   anchorIndex: number;
-}
-
-export interface ContactInfo {
-  displayEmail: string;
-  recipientEmail: string;
-  location: string;
 }
 
 export interface HeroPlanetLink {

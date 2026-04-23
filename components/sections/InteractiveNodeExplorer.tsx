@@ -6,7 +6,7 @@ import type { SphereNode } from "@/lib/types";
 import { useState } from "react";
 
 interface InteractiveNodeExplorerProps {
-  nodes: SphereNode[];
+  nodes: readonly SphereNode[];
   panelHeading: string;
 }
 

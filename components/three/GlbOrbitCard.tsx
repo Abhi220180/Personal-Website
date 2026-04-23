@@ -386,12 +386,11 @@ export function GlbOrbitCard({
     pointerLastRef.current = { x: event.clientX, y: event.clientY };
     draggingRef.current = true;
 
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {}
-
-    if (event.pointerType === "touch") {
-      event.preventDefault();
+    // Let mobile browsers keep vertical page scrolling behavior.
+    if (event.pointerType !== "touch") {
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {}
     }
   }, []);
 
@@ -404,8 +403,9 @@ export function GlbOrbitCard({
       return;
     }
 
+    // Avoid hijacking scroll gestures on touch devices.
     if (pointerTypeRef.current === "touch") {
-      event.preventDefault();
+      return;
     }
 
     const dx = event.clientX - pointerLastRef.current.x;
@@ -482,7 +482,7 @@ export function GlbOrbitCard({
       ref={containerRef}
       type="button"
       aria-label={ariaLabel ?? label}
-      className={`group relative flex touch-none flex-col items-center justify-center text-center ${className}`}
+      className={`group relative flex touch-pan-y flex-col items-center justify-center text-center ${className}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endPointer}

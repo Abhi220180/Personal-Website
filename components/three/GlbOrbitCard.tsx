@@ -301,8 +301,7 @@ export function GlbOrbitCard({
   const normalizedModelPath = modelPath.toLowerCase();
   const isRb16 = normalizedModelPath.includes("rb16");
   const isShiverburn = normalizedModelPath.includes("shiverburn");
-  const needsLargeScaleCompensation =
-    normalizedModelPath.includes("bonefin") || normalizedModelPath.includes("meltymonster");
+  const needsLargeScaleCompensation = normalizedModelPath.includes("meltymonster");
 
   const finalScale =
     (isRb16 ? scale : scale * 1.8) * (needsLargeScaleCompensation ? LARGE_MODEL_SCALE_FACTOR : 1);

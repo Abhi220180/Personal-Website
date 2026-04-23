@@ -7,8 +7,7 @@ export const modelPaths = {
   projects: "/models/shiverburn.glb",
   whoIAm: "/models/cosmic-cove.glb",
   experience: "/models/meltymonsterfinal.glb",
-  rb16: "/models/rb16.glb",
-  bonefin: "/models/bonefin.glb"
+  rb16: "/models/rb16.glb"
 } as const;
 
 export const heroPlanetLinks: readonly HeroPlanetLink[] = [

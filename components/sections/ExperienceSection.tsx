@@ -87,8 +87,8 @@ export function ExperienceSection() {
         <div className="relative mt-10">
           <div className="flex justify-end xl:absolute xl:right-0 xl:-top-44">
             <GlbOrbitCard
-              modelPath="/models/bonefin.glb"
-              label="Bonefin"
+              modelPath="/models/meltymonsterfinal.glb"
+              label="Meltymonster"
               showLabel={false}
               scale={0.95}
               className="h-[250px] w-[250px] sm:h-[290px] sm:w-[290px] lg:h-[320px] lg:w-[320px]"

@@ -4,6 +4,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true
   },
+  experimental: {
+    optimizePackageImports: ["@react-three/drei", "@react-three/fiber", "three", "three-stdlib"]
+  },
   async headers() {
     return [
       {

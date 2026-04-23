@@ -9,34 +9,55 @@ const nextBin = path.join(cwd, "node_modules", "next", "dist", "bin", "next");
 let child = null;
 let didCleanup = false;
 
-function cleanupLock() {
-  if (didCleanup) {
-    return;
-  }
-  didCleanup = true;
-  try {
-    fs.rmSync(lockPath, { force: true });
-  } catch {}
+const lockState = {
+  wrapperPid: process.pid,
+  childPid: 0,
+  createdAt: new Date().toISOString(),
+  cwd
+};
+
+function normalizePid(value) {
+  const pid = Number(value);
+  return Number.isInteger(pid) && pid > 0 ? pid : 0;
 }
 
-function readPidFromLock(contents) {
+function readLockPayload(contents) {
   const trimmed = String(contents || "").trim();
   if (!trimmed) {
     return null;
   }
 
   if (/^\d+$/.test(trimmed)) {
-    return Number(trimmed);
+    return { wrapperPid: normalizePid(trimmed), childPid: 0 };
   }
 
   try {
     const parsed = JSON.parse(trimmed);
-    if (parsed && Number.isInteger(parsed.pid)) {
-      return parsed.pid;
+    if (!parsed || typeof parsed !== "object") {
+      return null;
     }
-  } catch {}
+    return {
+      wrapperPid: normalizePid(parsed.wrapperPid ?? parsed.pid),
+      childPid: normalizePid(parsed.childPid)
+    };
+  } catch {
+    return null;
+  }
+}
 
-  return null;
+function writeLockFile(extra = {}) {
+  fs.writeFileSync(
+    lockPath,
+    JSON.stringify(
+      {
+        ...lockState,
+        ...extra,
+        updatedAt: new Date().toISOString()
+      },
+      null,
+      2
+    )
+  );
 }
 
 function isPidAlive(pid) {
@@ -48,53 +69,68 @@ function isPidAlive(pid) {
     process.kill(pid, 0);
     return true;
   } catch (error) {
-    return error && error.code === "EPERM";
+    return Boolean(error && error.code === "EPERM");
   }
+}
+
+function cleanupLock() {
+  if (didCleanup) {
+    return;
+  }
+  didCleanup = true;
+
+  try {
+    fs.rmSync(lockPath, { force: true });
+    return;
+  } catch {}
+
+  try {
+    // Some synced folders may deny delete; mark stale instead.
+    writeLockFile({
+      wrapperPid: 0,
+      childPid: 0,
+      stale: true,
+      releasedAt: new Date().toISOString()
+    });
+  } catch {}
 }
 
 function createBuildLockOrExit() {
   if (!fs.existsSync(lockPath)) {
-    const lockPayload = JSON.stringify(
-      {
-        pid: process.pid,
-        createdAt: new Date().toISOString(),
-        cwd
-      },
-      null,
-      2
-    );
-    fs.writeFileSync(lockPath, lockPayload);
+    writeLockFile();
     return;
   }
 
-  const existing = fs.readFileSync(lockPath, "utf8");
-  const existingPid = readPidFromLock(existing);
+  let existing = null;
+  try {
+    existing = readLockPayload(fs.readFileSync(lockPath, "utf8"));
+  } catch {}
 
-  if (isPidAlive(existingPid)) {
+  const activeWrapperPid = existing && isPidAlive(existing.wrapperPid) ? existing.wrapperPid : 0;
+  const activeChildPid = existing && isPidAlive(existing.childPid) ? existing.childPid : 0;
+
+  if (activeWrapperPid || activeChildPid) {
+    const activeParts = [];
+    if (activeWrapperPid) {
+      activeParts.push(`wrapper PID ${activeWrapperPid}`);
+    }
+    if (activeChildPid) {
+      activeParts.push(`child PID ${activeChildPid}`);
+    }
     console.error(
-      `[build-safe] Another build process is active (PID ${existingPid}). Stop it first, then rerun npm run build.`
+      `[build-safe] Another build process is active (${activeParts.join(
+        ", "
+      )}). Run npm run build:stop to clear it, then rerun npm run build.`
     );
     process.exit(1);
   }
 
-  try {
-    fs.rmSync(lockPath, { force: true });
-  } catch {}
-
-  const lockPayload = JSON.stringify(
-    {
-      pid: process.pid,
-      createdAt: new Date().toISOString(),
-      cwd
-    },
-    null,
-    2
-  );
-  fs.writeFileSync(lockPath, lockPayload);
+  // Overwrite stale lock instead of requiring delete permissions.
+  writeLockFile({ childPid: 0, stale: false, recoveredAt: new Date().toISOString() });
 }
 
 function terminateChildAndExit(code) {
-  if (child && !child.killed) {
+  if (child && child.pid) {
     try {
       child.kill("SIGTERM");
     } catch {}
@@ -127,6 +163,10 @@ child = spawn(process.execPath, [nextBin, "build"], {
   env: process.env,
   stdio: "inherit"
 });
+
+if (child.pid) {
+  writeLockFile({ childPid: child.pid, stale: false });
+}
 
 child.on("error", (error) => {
   console.error(error);

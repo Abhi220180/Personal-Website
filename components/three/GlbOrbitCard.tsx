@@ -1,6 +1,7 @@
 "use client";
 
-import { Environment, useGLTF } from "@react-three/drei";
+import { Environment } from "@react-three/drei/core/Environment";
+import { useGLTF } from "@react-three/drei/core/Gltf";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { SkeletonUtils } from "three-stdlib";
@@ -285,9 +286,9 @@ export function GlbOrbitCard({
 }: GlbOrbitCardProps) {
   const isRb16 = modelPath.includes("rb16");
   const isShiverburn = modelPath.includes("shiverburn");
-  const isBonefin = modelPath.includes("bonefin");
+  const isMeltymonster = modelPath.includes("meltymonster");
 
-  const finalScale = (isRb16 ? scale : scale * 1.8) * (isBonefin ? 20 : 1);
+  const finalScale = (isRb16 ? scale : scale * 1.8) * (isMeltymonster ? 20 : 1);
 
   const containerRef = useRef<HTMLButtonElement | null>(null);
   const pointerStartRef = useRef<PointerPoint | null>(null);
@@ -296,7 +297,7 @@ export function GlbOrbitCard({
   const pointerTypeRef = useRef<string | null>(null);
   const draggingRef = useRef(false);
   const rotationTargetRef = useRef<RotationTarget>({
-    x: isShiverburn ? Math.PI / 6 : isBonefin ? Math.PI / 9 : 0,
+    x: isShiverburn ? Math.PI / 6 : isMeltymonster ? Math.PI / 9 : 0,
     y: 0 
   });
   const [isVisible, setIsVisible] = useState(false);

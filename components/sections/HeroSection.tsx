@@ -33,7 +33,7 @@ export function HeroSection() {
     }
 
     const preload = async () => {
-      const { useGLTF } = await import("@react-three/drei");
+      const { useGLTF } = await import("@react-three/drei/core/Gltf");
       for (const modelPath of allModelPaths) {
         useGLTF.preload(modelPath);
       }

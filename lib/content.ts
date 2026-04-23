@@ -21,10 +21,10 @@ export const heroPlanetLinks: HeroPlanetLink[] = [
     scale: 1
   },
   {
-    id: "bonefin",
+    id: "meltymonster",
     label: "Experience",
     href: "/experience",
-    modelPath: "/models/bonefin.glb",
+    modelPath: "/models/meltymonsterfinal.glb",
     description: "Teams, clubs, and internships.",
     scale: 0.98
   }
@@ -33,7 +33,7 @@ export const heroPlanetLinks: HeroPlanetLink[] = [
 export const allModelPaths = [
   "/models/shiverburn.glb",
   "/models/cosmic-cove.glb",
-  "/models/bonefin.glb",
+  "/models/meltymonsterfinal.glb",
   "/models/rb16.glb"
 ] as const;
 

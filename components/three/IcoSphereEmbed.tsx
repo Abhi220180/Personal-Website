@@ -1,7 +1,7 @@
 "use client";
 
 import type { SphereNode } from "@/lib/types";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   useCallback,

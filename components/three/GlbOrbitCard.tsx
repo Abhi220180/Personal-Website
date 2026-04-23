@@ -288,9 +288,11 @@ export function GlbOrbitCard({
 }: GlbOrbitCardProps) {
   const isRb16 = modelPath.includes("rb16");
   const isShiverburn = modelPath.includes("shiverburn");
+  const isBonefin = modelPath.includes("bonefin");
   const isMeltymonster = modelPath.includes("meltymonster");
+  const needsLargeScaleCompensation = isBonefin || isMeltymonster;
 
-  const finalScale = isRb16 ? scale : scale * 1.8;
+  const finalScale = (isRb16 ? scale : scale * 1.8) * (needsLargeScaleCompensation ? 20 : 1);
 
   const containerRef = useRef<HTMLButtonElement | null>(null);
   const pointerStartRef = useRef<PointerPoint | null>(null);
@@ -299,7 +301,7 @@ export function GlbOrbitCard({
   const pointerTypeRef = useRef<string | null>(null);
   const draggingRef = useRef(false);
   const rotationTargetRef = useRef<RotationTarget>({
-    x: isShiverburn ? Math.PI / 6 : isMeltymonster ? Math.PI / 9 : 0,
+    x: isShiverburn ? Math.PI / 6 : needsLargeScaleCompensation ? Math.PI / 9 : 0,
     y: 0 
   });
   const [isVisible, setIsVisible] = useState(false);

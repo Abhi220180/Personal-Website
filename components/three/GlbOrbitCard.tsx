@@ -192,10 +192,12 @@ function FitCamera({ radius }: FitCameraProps) {
     const cam = camera as PerspectiveCamera;
     const fovRad = (cam.fov * Math.PI) / 180;
     const distance = (radius * 1.15) / Math.tan(fovRad * 0.5);
+    const nearPlane = Math.max(0.1, distance - radius * 2.2);
+    const farPlane = distance + radius * 2.2;
 
     cam.position.set(0, 0, distance);
-    cam.near = Math.max(0.01, distance - radius * 6);
-    cam.far = distance + radius * 10;
+    cam.near = Math.min(nearPlane, distance - 0.05);
+    cam.far = Math.max(farPlane, cam.near + 1);
     cam.lookAt(0, 0, 0);
     cam.updateProjectionMatrix();
   }, [camera, radius]);
@@ -288,7 +290,7 @@ export function GlbOrbitCard({
   const isShiverburn = modelPath.includes("shiverburn");
   const isMeltymonster = modelPath.includes("meltymonster");
 
-  const finalScale = (isRb16 ? scale : scale * 1.8) * (isMeltymonster ? 20 : 1);
+  const finalScale = isRb16 ? scale : scale * 1.8;
 
   const containerRef = useRef<HTMLButtonElement | null>(null);
   const pointerStartRef = useRef<PointerPoint | null>(null);
@@ -473,6 +475,7 @@ export function GlbOrbitCard({
             gl={{
               antialias: !isLowMemoryMode,
               alpha: true,
+              logarithmicDepthBuffer: true,
               powerPreference: isLowMemoryMode ? "low-power" : "high-performance"
             }}
           >

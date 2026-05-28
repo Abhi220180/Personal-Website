@@ -22,3 +22,9 @@ export interface HeroPlanetLink {
   description: string;
   scale?: number;
 }
+
+export interface ContactInfo {
+  displayEmail: string;
+  recipientEmail: string;
+  location: string;
+}

@@ -7,11 +7,12 @@ export interface SphereNode {
   roleName?: string;
   href: string;
   iconSrc?: string;
+  modelPath?: string;
+  modelScale?: number;
   color?: string;
   ringColor?: string;
   summary?: string;
   highlights?: readonly string[];
-  anchorIndex: number;
 }
 
 export interface HeroPlanetLink {
@@ -21,10 +22,4 @@ export interface HeroPlanetLink {
   modelPath: string;
   description: string;
   scale?: number;
-}
-
-export interface ContactInfo {
-  displayEmail: string;
-  recipientEmail: string;
-  location: string;
 }

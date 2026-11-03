@@ -25,8 +25,9 @@ export function ProjectsSection() {
                 How to use Isosphere:
               </h3>
               <p className="mt-3 text-sm leading-7 text-white/85 md:text-base md:leading-8">
-                Drag the Isosphere within the window to reveal dots, which when hovered over, can
-                reveal the project and when clicked, will take you to the project link.
+                Drag the isosphere to reveal project markers. Pause over a marker briefly to keep
+                its details open; selecting another marker replaces them. Click the popup to open
+                the project link.
               </p>
             </article>
 

@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true
-  },
   experimental: {
     optimizePackageImports: ["@react-three/drei", "@react-three/fiber", "three", "three-stdlib"]
   },

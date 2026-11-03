@@ -14,17 +14,24 @@ export function InteractiveNodeExplorer({
   nodes,
   panelHeading
 }: InteractiveNodeExplorerProps) {
-  const [hoveredNode, setHoveredNode] = useState<SphereNode | null>(null);
+  const [selectedNode, setSelectedNode] = useState<SphereNode | null>(null);
 
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,560px)_minmax(0,1fr)]">
       <div className="mx-auto aspect-square w-full max-w-[560px] xl:mx-0">
-        <LazyIcoSphereEmbed nodes={nodes} onHoverNodeChange={setHoveredNode} />
+        <LazyIcoSphereEmbed
+          nodes={nodes}
+          onHoverNodeChange={(node) => {
+            if (node) {
+              setSelectedNode(node);
+            }
+          }}
+        />
       </div>
 
-      {hoveredNode ? (
+      {selectedNode ? (
         <div className="xl:pt-2">
-          <HoverNodeDetailsPanel node={hoveredNode} heading={panelHeading} />
+          <HoverNodeDetailsPanel node={selectedNode} heading={panelHeading} />
         </div>
       ) : null}
     </div>

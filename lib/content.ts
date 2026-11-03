@@ -60,7 +60,6 @@ export const projectSphereNodes: readonly SphereNode[] = [
       "Interactive systems design and debugging",
       "Performance-focused engine iteration"
     ],
-    anchorIndex: 4
   },
   {
     id: "personal-website",
@@ -77,7 +76,6 @@ export const projectSphereNodes: readonly SphereNode[] = [
       "React Three Fiber scene composition",
       "Frontend performance and caching optimization"
     ],
-    anchorIndex: 12
   },
   {
     id: "f1-simulator-project",
@@ -94,7 +92,6 @@ export const projectSphereNodes: readonly SphereNode[] = [
       "Simulation environment integration",
       "Result analysis and iteration"
     ],
-    anchorIndex: 8
   },
   {
     id: "github",
@@ -110,11 +107,29 @@ export const projectSphereNodes: readonly SphereNode[] = [
       "Project documentation and code organization",
       "Open-source collaboration habits"
     ],
-    anchorIndex: 0
   }
 ];
 
 export const experienceSphereNodes: readonly SphereNode[] = [
+  {
+    id: "silicon-badgers",
+    label: "Silicon Badgers",
+    category: "Experience",
+    roleName: "SW & Performance Modeling Engineer · Sept 2026 – Present",
+    href: "https://siliconbadgers.com/",
+    iconSrc: "/images/nodes/siliconbadgers.png",
+    modelPath: "/models/silicon-badgers-chip-v3.glb",
+    modelScale: 0.105,
+    color: "#000000",
+    ringColor: "#e00000",
+    summary:
+      "Software and performance modeling engineer at Silicon Badgers, sponsored by OpenAI, Tesla, Annapurna Labs (Amazon), and Synopsys.",
+    highlights: [
+      "Built a reproducible Timeloop/Accelergy modeling pipeline for Qwen3.5-2B inference, mapping profiled FFN and output-head matmuls across decode and prefill on an RTL-derived 8×8 INT8 array",
+      "Evaluated SRAM tiling and weight reuse across seven mappings, cutting modeled off-chip weight reads 16× (192 to 12 MiB per prefill FFN) under a provisional 2 MiB SRAM budget",
+      "Contributing to compute-unit ISA and architecture, using workload requirements to guide instruction semantics and supported operations"
+    ]
+  },
   {
     id: "nova",
     label: "NOVA",
@@ -122,6 +137,8 @@ export const experienceSphereNodes: readonly SphereNode[] = [
     roleName: "Vehicle Engineer",
     href: "https://nova-utd.github.io/",
     iconSrc: "/images/nodes/nova.jpg",
+    modelPath: "/models/nova-vehicle-v2.glb",
+    modelScale: 0.13,
     color: "#f97316",
     ringColor: "#ea580c",
     summary:
@@ -130,8 +147,7 @@ export const experienceSphereNodes: readonly SphereNode[] = [
       "Built CARLA-based pedestrian-detection workflows using LiDAR point-cloud data to support simulation-driven perception testing for NOVA's open-source self-driving platform",
       "Integrated an NVIDIA AGX compute module with ZED camera systems to enable onboard sensor processing and embedded perception workloads",
       "Used CUDA on NVIDIA hardware to support GPU-accelerated perception workloads in real-time autonomous driving experiments"
-    ],
-    anchorIndex: 4
+    ]
   },
   {
     id: "wisconsin-autonomous",
@@ -140,6 +156,8 @@ export const experienceSphereNodes: readonly SphereNode[] = [
     roleName: "Perception Developer/Engineer",
     href: "https://wa.wisc.edu/",
     iconSrc: "/images/nodes/wisconsin-autonomous.jpg",
+    modelPath: "/models/wisconsin-autonomous-car-v5.glb",
+    modelScale: 0.14,
     color: "#c5050c",
     ringColor: "#9b0000",
     summary:
@@ -148,38 +166,42 @@ export const experienceSphereNodes: readonly SphereNode[] = [
       "Trained an EfficientNet-based image classifier for traffic sign recognition, achieving 87% validation accuracy using BDD100K and internal data",
       "Built a two-stage perception pipeline for bounding-box detection and classification, achieving 83 ms camera-to-recognition latency",
       "Evaluated MATLAB/Simulink sim-to-real generalization across 1,000 images per class, finding only a 1.5% accuracy gap between simulated and real-world traffic sign data"
-    ],
-    anchorIndex: 8
+    ]
   },
   {
     id: "amd",
     label: "AMD",
     category: "Experience",
-    roleName: "Graduate Hardware Engineer Co-op",
+    roleName: "Graduate Hardware Engineer Co-op · Fall 2026 – Present",
     href: "https://www.amd.com/",
     iconSrc: "/images/nodes/AMD%20Logo.png",
+    modelPath: "/models/amd-logo-black.glb",
+    modelScale: 0.12,
     color: "#0b0b0f",
     ringColor: "#5aaeb5",
-    summary: "Doing Design Verification on AMD Accelerators and Datacenter GPUs",
-    highlights: ["Incoming Fall 2026"],
-    anchorIndex: 12
+    summary: "Performing design verification for AMD accelerators and datacenter GPUs.",
+    highlights: []
   },
   {
     id: "ibm",
     label: "IBM",
     category: "Experience",
-    roleName: "Physical Design Engineer Intern",
-    href: "https://www.ibm.com/",
+    roleName: "Physical Design Engineer Intern · Summer 2026",
+    href: "https://research.ibm.com/blog/spyre-for-z",
     iconSrc: "/images/nodes/IBM%20Logo.png",
+    modelPath: "/models/ibm-eye-bee-m-v3.glb",
+    modelScale: 0.058,
     color: "#f8f9fb",
     ringColor: "#4a84be",
-    summary: "Developing Silicon Interposer for AI Accelerators",
-    highlights: ["Incoming Summer 2026"],
-    anchorIndex: 16
+    summary: "- Developed Silicon Interposer technology for IBM’s next-generation AI ASIC, improving performance-per-watt efficiency.",
+    highlights: [
+      "Created TCL design scripts to generate interconnect geometries, signal wiring, and power architectures in Cadence Innovus and Integrity 3DIC, applying Samsung 4nm PDK design rules during physical verification",
+      "Reduced worst-case IR drop by 15.4% through power C4 redistribution and power-grid enhancements while maintaining EM/IR integrity"
+    ]
   }
 ];
 
 export const aboutParagraphs: readonly string[] = [
   "Hello,",
-  "My name is Abhinav Gummadi. I am a 3rd year student at UW Madison studying Computer Science and Computer Engineering. Outside of academics & career, I love to sim race, have fun with friends, stargaze, ponder at art, and draw pieces of fashion. I also enjoy F1, playing single player video games, and watching animated shows (American and Japanese)."
+  "My name is Abhinav Gummadi. I am a 4th year student at UW Madison studying Computer Science and Computer Engineering. Outside of academics & career, I love to sim race, have fun with friends, stargaze, ponder at art, and draw pieces of fashion. I also enjoy F1, playing single player video games, and watching animated shows (American and Japanese)."
 ];

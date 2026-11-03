@@ -40,6 +40,23 @@ body {
   padding: 0;
 }
 
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 body {
   background-image:
     linear-gradient(rgba(6, 13, 30, 0.46), rgba(6, 13, 30, 0.46)),

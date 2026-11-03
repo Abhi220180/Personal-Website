@@ -1,42 +1,12 @@
 "use client";
 
 import { LazyGlbOrbitCard } from "@/components/three/LazyGlbOrbitCard";
-import { allModelPaths, heroNameLine, heroPlanetLinks, heroSchoolLine } from "@/lib/content";
+import { heroNameLine, heroPlanetLinks, heroSchoolLine } from "@/lib/content";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export function HeroSection() {
   const router = useRouter();
-
-  useEffect(() => {
-    const connection = (
-      navigator as Navigator & {
-        connection?: {
-          saveData?: boolean;
-          effectiveType?: string;
-        };
-      }
-    ).connection;
-
-    if (
-      connection?.saveData ||
-      connection?.effectiveType === "2g" ||
-      connection?.effectiveType === "slow-2g"
-    ) {
-      return;
-    }
-
-    const preload = async () => {
-      const { useGLTF } = await import("@react-three/drei/core/Gltf");
-      for (const modelPath of allModelPaths) {
-        useGLTF.preload(modelPath);
-      }
-    };
-
-    const timeoutId = window.setTimeout(preload, 650);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
 
   return (
     <section id="top" className="relative min-h-[92vh] section-rule">
@@ -70,10 +40,10 @@ export function HeroSection() {
                   style={{ imageRendering: "pixelated" }}
                 />
               </a>
-              {/* Email icon with hover tooltip */}
+              {/* Email icon with hover and keyboard tooltip */}
               <div className="group relative flex items-center justify-center">
-                <button
-                  type="button"
+                <a
+                  href="mailto:abhinavgummadi.work@gmail.com"
                   aria-label="Email address"
                   className="flex items-center justify-center transition-transform duration-150 hover:scale-110 active:scale-95"
                 >
@@ -85,10 +55,10 @@ export function HeroSection() {
                     className="h-[28px] w-[28px] object-contain md:h-[36px] md:w-[36px]"
                     style={{ imageRendering: "pixelated" }}
                   />
-                </button>
+                </a>
                 {/* Tooltip */}
                 <div
-                  className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded border border-white/30 bg-black/80 px-2.5 py-1.5 font-['Press_Start_2P'] text-[7px] text-white/90 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 md:text-[8px]"
+                  className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded border border-white/30 bg-black/80 px-2.5 py-1.5 font-['Press_Start_2P'] text-[7px] text-white/90 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 md:text-[8px]"
                   role="tooltip"
                 >
                   abhinavgummadi.work@gmail.com
@@ -140,6 +110,7 @@ export function HeroSection() {
               autoRotateSpeed={0.24}
               className="h-[220px] sm:h-[280px] md:h-[320px]"
               onActivate={() => router.push(planet.href)}
+              onIntent={() => router.prefetch(planet.href)}
               ariaLabel={`Open ${planet.label} section`}
             />
           ))}

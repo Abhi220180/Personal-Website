@@ -1,6 +1,6 @@
 "use client";
 
-import { Environment } from "@react-three/drei/core/Environment";
+import { useGraphicsPreferences } from "@/components/three/useGraphicsPreferences";
 import { useGLTF } from "@react-three/drei/core/Gltf";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -70,6 +70,7 @@ export interface GlbOrbitCardProps {
   autoRotateSpeed?: number;
   className?: string;
   onActivate?: () => void;
+  onIntent?: () => void;
   ariaLabel?: string;
 }
 
@@ -273,7 +274,6 @@ function GlbScene({
     <>
       <FitCamera radius={prepared.radius} />
       <ambientLight intensity={isLowMemoryMode ? 1.18 : 1.25} />
-      {!isLowMemoryMode ? <Environment preset="city" /> : null}
       <hemisphereLight intensity={isLowMemoryMode ? 0.72 : 0.85} groundColor="#131a32" />
       <directionalLight intensity={isLowMemoryMode ? 1 : 1.35} position={[2.4, 2.8, 2.9]} />
       {!isLowMemoryMode ? <directionalLight intensity={0.66} position={[-2.3, -1.7, -2.4]} /> : null}
@@ -296,6 +296,7 @@ export function GlbOrbitCard({
   autoRotateSpeed = 0.28,
   className = "",
   onActivate,
+  onIntent,
   ariaLabel
 }: GlbOrbitCardProps) {
   const normalizedModelPath = modelPath.toLowerCase();
@@ -306,7 +307,7 @@ export function GlbOrbitCard({
   const finalScale =
     (isRb16 ? scale : scale * 1.8) * (needsLargeScaleCompensation ? LARGE_MODEL_SCALE_FACTOR : 1);
 
-  const containerRef = useRef<HTMLButtonElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const pointerStartRef = useRef<PointerPoint | null>(null);
   const pointerLastRef = useRef<PointerPoint | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
@@ -318,7 +319,7 @@ export function GlbOrbitCard({
   });
   const [isVisible, setIsVisible] = useState(false);
   const [isNearViewport, setIsNearViewport] = useState(false);
-  const [isLowMemoryMode, setIsLowMemoryMode] = useState(false);
+  const { prefersReducedMotion, useLowPowerGraphics: isLowMemoryMode } = useGraphicsPreferences();
 
   const resetPointerState = useCallback(() => {
     draggingRef.current = false;
@@ -361,21 +362,7 @@ export function GlbOrbitCard({
     useGLTF.preload(modelPath);
   }, [isNearViewport, modelPath]);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(pointer: coarse)");
-    const updateMode = () => setIsLowMemoryMode(mediaQuery.matches);
-
-    updateMode();
-    try {
-      mediaQuery.addEventListener("change", updateMode);
-      return () => mediaQuery.removeEventListener("change", updateMode);
-    } catch {
-      mediaQuery.addListener(updateMode);
-      return () => mediaQuery.removeListener(updateMode);
-    }
-  }, []);
-
-  const handlePointerDown = useCallback((event: PointerEvent<HTMLButtonElement>) => {
+  const handlePointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
     if (activePointerIdRef.current !== null) {
       return;
     }
@@ -394,7 +381,7 @@ export function GlbOrbitCard({
     }
   }, []);
 
-  const handlePointerMove = useCallback((event: PointerEvent<HTMLButtonElement>) => {
+  const handlePointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
     if (
       !draggingRef.current ||
       !pointerLastRef.current ||
@@ -426,7 +413,7 @@ export function GlbOrbitCard({
   }, []);
 
   const endPointer = useCallback(
-    (event: PointerEvent<HTMLButtonElement>) => {
+    (event: PointerEvent<HTMLDivElement>) => {
       if (activePointerIdRef.current !== event.pointerId) {
         return;
       }
@@ -454,7 +441,7 @@ export function GlbOrbitCard({
   );
 
   const handlePointerCancel = useCallback(
-    (event: PointerEvent<HTMLButtonElement>) => {
+    (event: PointerEvent<HTMLDivElement>) => {
       if (event.currentTarget.hasPointerCapture(event.pointerId)) {
         event.currentTarget.releasePointerCapture(event.pointerId);
       }
@@ -464,7 +451,7 @@ export function GlbOrbitCard({
   );
 
   const handleKeyboardActivate = useCallback(
-    (event: KeyboardEvent<HTMLButtonElement>) => {
+    (event: KeyboardEvent<HTMLDivElement>) => {
       if ((event.key === "Enter" || event.key === " ") && onActivate) {
         event.preventDefault();
         onActivate();
@@ -475,12 +462,14 @@ export function GlbOrbitCard({
 
   const preloadModel = useCallback(() => {
     useGLTF.preload(modelPath);
-  }, [modelPath]);
+    onIntent?.();
+  }, [modelPath, onIntent]);
 
   return (
-    <button
+    <div
       ref={containerRef}
-      type="button"
+      role={onActivate ? "button" : "img"}
+      tabIndex={onActivate ? 0 : undefined}
       aria-label={ariaLabel ?? label}
       className={`group relative flex touch-pan-y flex-col items-center justify-center text-center ${className}`}
       onPointerDown={handlePointerDown}
@@ -508,7 +497,7 @@ export function GlbOrbitCard({
               <GlbScene
                 modelPath={modelPath}
                 scale={finalScale}
-                autoRotateSpeed={autoRotateSpeed}
+                autoRotateSpeed={prefersReducedMotion ? 0 : autoRotateSpeed}
                 rotationTargetRef={rotationTargetRef}
                 draggingRef={draggingRef}
                 isLowMemoryMode={isLowMemoryMode}
@@ -525,6 +514,6 @@ export function GlbOrbitCard({
           {subtitle ? <p className="mt-1 text-xs text-white/80">{subtitle}</p> : null}
         </div>
       ) : null}
-    </button>
+    </div>
   );
 }

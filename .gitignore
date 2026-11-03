@@ -19,6 +19,7 @@ yarn-error.log*
 pnpm-debug.log*
 build-test*.log
 build-direct-test*.log
+local-server*.log
 .next-build.lock
 
 # local env files

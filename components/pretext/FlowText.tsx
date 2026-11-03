@@ -143,7 +143,7 @@ function computeLineSpans(
   }
 
   if (intervals.length === 0) {
-    return [{ x: 0, width }];
+    return [];
   }
 
   const usableIntervals = intervals
@@ -154,7 +154,7 @@ function computeLineSpans(
     .filter((interval) => interval.end - interval.start >= minLineWidth);
 
   if (usableIntervals.length === 0) {
-    return [{ x: 0, width }];
+    return [];
   }
 
   if (fillSplitSpans && usableIntervals.length >= 2) {
@@ -265,6 +265,7 @@ export function FlowText({
   }, [obstacles, width]);
 
   const preparedParagraphs = useMemo(() => {
+    void fontEpoch;
     if (width === 0) {
       return [];
     }
@@ -301,6 +302,15 @@ export function FlowText({
           fillSplitSpans,
           lines.length
         );
+
+        if (spans.length === 0) {
+          y += style.lineHeight;
+          safetyCounter += 1;
+          if (safetyCounter > 1200) {
+            break;
+          }
+          continue;
+        }
 
         let wroteAnyLine = false;
         let paragraphDone = false;

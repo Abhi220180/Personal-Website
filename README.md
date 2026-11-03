@@ -1,71 +1,64 @@
 # Abhinav Gummadi Personal Website
 
-Single-page editorial portfolio built with Next.js, TypeScript, Tailwind CSS, Framer Motion, react-three-fiber/drei, and `@chenglou/pretext`.
+Interactive multi-page portfolio built with Next.js App Router, TypeScript, Tailwind CSS, React Three Fiber, Drei, Three.js, and `@chenglou/pretext`.
 
-## Stack
+## Requirements
 
-- Next.js (App Router)
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- three + @react-three/fiber + @react-three/drei
-- @chenglou/pretext
+- Node.js 22 (`.nvmrc`)
+- npm
 
-## Local Setup
-
-1. Install dependencies:
+## Local development
 
 ```bash
 npm install
-```
-
-2. Run development server:
-
-```bash
 npm run dev
 ```
 
-3. Open:
+Open `http://localhost:3000`.
 
-```text
-http://localhost:3000
-```
-
-4. Optional production build check:
+## Quality checks
 
 ```bash
+npm run check
 npm run build
 ```
 
-## Content You Can Edit Quickly
+`npm run check` runs ESLint, TypeScript, and public-asset validation. The production build also validates referenced assets before compiling.
 
-- Hero, bio text, and what-I-like text:
-  - `lib/content.ts`
-- Sphere node labels/categories/links:
-  - `lib/content.ts` (`sphereNodes`)
-- Contact email and location:
-  - `lib/content.ts` (`contactInfo`)
+## Content and routes
 
-## Contact Form Behavior
+- `/` — hero and navigation planets
+- `/who-i-am` — biography and draggable RB16 model
+- `/projects` — interactive project isosphere
+- `/experience` — interactive experience isosphere and company models
+- `lib/content.ts` — copy, links, model references, and isosphere entries
+- `lib/types.ts` — shared content types
 
-- Default behavior: `mailto:` fallback (opens visitor email client with prefilled fields).
-- Optional Formspree:
-  - add `NEXT_PUBLIC_FORMSPREE_ENDPOINT` in `.env.local`
-  - form submits via `fetch` to that endpoint
+## 3D assets
 
-Example:
+Company models are generated from code and then optimized with Meshopt:
 
 ```bash
-NEXT_PUBLIC_FORMSPREE_ENDPOINT=https://formspree.io/f/your-id
+npm run generate:company-logos
 ```
 
-## How Pretext Is Used
+To optimize every GLB currently referenced by `lib/content.ts` without regenerating the company models:
 
-`@chenglou/pretext` is used to compute line breaks and manual line placement without relying on normal DOM flow measurements:
+```bash
+npm run optimize:models
+```
 
-- Hero section:
-  - custom line routing around an editorial aside block
-- Bio section:
-  - text lines are laid out around a circular exclusion zone where the embedded 3D sphere sits
+Keep only models referenced by `lib/content.ts` in `public/models`. When changing an immutable model in production, update its versioned filename and the corresponding content reference so returning visitors receive the new file.
 
-This creates a dynamic, spatial text-flow composition inspired by Pretext dynamic-layout patterns, while keeping the page readable and lightweight.
+## Project structure
+
+```text
+app/                 Routes, metadata, and global styles
+components/layout/   Shared page shell
+components/sections/ Page-level sections and content explorers
+components/three/    React Three Fiber scenes and graphics preferences
+components/ui/       Navigation and detail panels
+lib/                 Content and shared types
+public/              Images, fonts, and GLB assets
+scripts/             Build locking, validation, generation, and optimization
+```

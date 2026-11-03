@@ -18,24 +18,40 @@ const RB_CARD_WIDTH = 320;
 const RB_CARD_HEIGHT = 205;
 const RB_SPAWN_PADDING = 20;
 
+type LayoutBounds = { width: number; height: number };
+
 function getInitialRbPosition(width: number, height: number) {
   const x = Math.max(12, width - RB_CARD_WIDTH - RB_SPAWN_PADDING);
   const y = width >= 1024 ? -62 : width >= 768 ? -22 : Math.max(8, Math.min(height - RB_CARD_HEIGHT - 12, 20));
   return { x, y };
 }
 
+function clampRbPosition(position: { x: number; y: number }, bounds: LayoutBounds) {
+  return {
+    x: Math.max(0, Math.min(position.x, Math.max(0, bounds.width - RB_CARD_WIDTH))),
+    y: Math.max(-80, Math.min(position.y, Math.max(0, bounds.height - RB_CARD_HEIGHT)))
+  };
+}
+
 export function AboutSection() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [isReady, setIsReady] = useState(false);
+  const isReadyRef = useRef(false);
+  const boundsRef = useRef<LayoutBounds>({ width: 0, height: 0 });
   const activePointerIdRef = useRef<number | null>(null);
   const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
 
   const handleLayout = useCallback(({ width, height }: { width: number; height: number }) => {
-    if (!isReady) {
+    boundsRef.current = { width, height };
+    if (!isReadyRef.current) {
       setPos(getInitialRbPosition(width, height));
+      isReadyRef.current = true;
       setIsReady(true);
+      return;
     }
-  }, [isReady]);
+
+    setPos((previous) => clampRbPosition(previous, { width, height }));
+  }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
@@ -61,10 +77,15 @@ export function AboutSection() {
     if (activePointerIdRef.current !== e.pointerId) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
-    setPos({
-      x: dragRef.current.initialX + dx,
-      y: dragRef.current.initialY + dy
-    });
+    setPos(
+      clampRbPosition(
+        {
+          x: dragRef.current.initialX + dx,
+          y: dragRef.current.initialY + dy
+        },
+        boundsRef.current
+      )
+    );
 
     if (e.pointerType === "touch") {
       e.preventDefault();
@@ -135,6 +156,7 @@ export function AboutSection() {
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onPointerCancel={handlePointerUp}
+                onLostPointerCapture={handlePointerUp}
               >
                 <div className="absolute inset-0 z-20" />
                 <LazyGlbOrbitCard

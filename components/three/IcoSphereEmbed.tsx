@@ -1,9 +1,12 @@
 "use client";
 
 import type { SphereNode } from "@/lib/types";
+import { useGraphicsPreferences } from "@/components/three/useGraphicsPreferences";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { useGLTF } from "@react-three/drei/core/Gltf";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import * as THREE from "three";
 
@@ -12,8 +15,11 @@ interface IcoSphereEmbedProps {
   onHoverNodeChange?: (node: SphereNode | null) => void;
 }
 
+const NODE_HOVER_ACTIVATION_MS = 300;
+
 type MappedNode = SphereNode & {
   position: THREE.Vector3;
+  orientation: THREE.Quaternion;
 };
 
 type ScreenPosition = {
@@ -104,25 +110,41 @@ function mapNodesEvenly(nodes: readonly SphereNode[], vertices: THREE.Vector3[])
     }
 
     if (bestVertexIndex < 0) {
-      bestVertexIndex = node.anchorIndex % vertices.length;
+      bestVertexIndex = nodeIndex % vertices.length;
     }
 
     usedVertexIndices.add(bestVertexIndex);
 
+    const position = vertices[bestVertexIndex];
+    const orientation = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 0, 1),
+      position.clone().normalize()
+    );
+
     return {
       ...node,
-      position: vertices[bestVertexIndex]
+      position,
+      orientation
     };
   });
+}
+
+function LogoModelMarker({ node, isHovered }: { node: MappedNode; isHovered: boolean }) {
+  const { scene } = useGLTF(node.modelPath!);
+  const model = useMemo(() => scene.clone(true), [scene]);
+  const scale = (node.modelScale ?? 0.1) * (isHovered ? 1.18 : 1);
+
+  return <primitive object={model} scale={scale} />;
 }
 
 interface SceneProps {
   nodes: readonly SphereNode[];
   hoveredId: string | null;
   onHoverNode: (id: string | null) => void;
-  onClickNode: (node: SphereNode) => void;
+  onClickNode: (node: SphereNode, pointerType?: string) => void;
   canvasEl: HTMLCanvasElement | null;
   onScreenPosition: (position: ScreenPosition | null) => void;
+  prefersReducedMotion: boolean;
 }
 
 function Scene({
@@ -131,7 +153,8 @@ function Scene({
   onHoverNode,
   onClickNode,
   canvasEl,
-  onScreenPosition
+  onScreenPosition,
+  prefersReducedMotion
 }: SceneProps) {
   const groupRef = useRef<THREE.Group | null>(null);
   const { camera } = useThree();
@@ -178,7 +201,9 @@ function Scene({
     if (!group) {
       return;
     }
-    group.rotation.y += delta * 0.03;
+    if (!prefersReducedMotion) {
+      group.rotation.y += delta * 0.03;
+    }
 
     if (!canvasEl || !hoveredId) {
       return;
@@ -205,8 +230,8 @@ function Scene({
 
     onScreenPosition({
       id: hoveredNode.id,
-      screenX: rect.left + ndcX * rect.width + window.scrollX,
-      screenY: rect.top + ndcY * rect.height + window.scrollY,
+      screenX: rect.left + ndcX * rect.width,
+      screenY: rect.top + ndcY * rect.height,
       visible: isFrontFacing
     });
   });
@@ -224,11 +249,11 @@ function Scene({
       </points>
       {mappedNodes.map((node) => {
         const isHovered = hoveredId === node.id;
-        const markerColor = node.color ?? "#525252";
+        const markerCenterColor = node.id === "ibm" ? "#ffffff" : "#000000";
         const markerRadius = isHovered ? 0.058 : 0.043;
 
         return (
-          <group key={node.id} position={node.position}>
+          <group key={node.id} position={node.position} quaternion={node.orientation}>
             <mesh
               onPointerOver={(event) => {
                 event.stopPropagation();
@@ -238,33 +263,37 @@ function Scene({
                 event.stopPropagation();
                 onHoverNode(null);
               }}
-              onClick={(event) => {
+              onPointerUp={(event) => {
                 event.stopPropagation();
-                onClickNode(node);
+                onClickNode(node, event.pointerType);
               }}
             >
-              <sphereGeometry args={[0.13, 16, 16]} />
-              <meshBasicMaterial transparent opacity={0} />
+              <sphereGeometry args={[node.modelPath ? 0.2 : 0.13, 16, 16]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
             </mesh>
-            {node.ringColor ? (
-              <mesh>
-                <sphereGeometry args={[markerRadius + 0.014, 24, 24]} />
-                <meshStandardMaterial
-                  color={node.ringColor}
-                  emissive={isHovered ? node.ringColor : "#181818"}
-                  emissiveIntensity={isHovered ? 0.35 : 0.08}
-                  side={THREE.BackSide}
-                />
-              </mesh>
-            ) : null}
-            <mesh>
-              <sphereGeometry args={[markerRadius, 24, 24]} />
-              <meshStandardMaterial
-                color={markerColor}
-                emissive={isHovered ? markerColor : "#000000"}
-                emissiveIntensity={isHovered ? 0.3 : 0.05}
-              />
-            </mesh>
+            {node.modelPath ? (
+              <Suspense fallback={null}>
+                <LogoModelMarker node={node} isHovered={isHovered} />
+              </Suspense>
+            ) : (
+              <>
+                {node.ringColor ? (
+                  <mesh>
+                    <sphereGeometry args={[markerRadius + 0.014, 24, 24]} />
+                    <meshStandardMaterial
+                      color={node.ringColor}
+                      emissive={isHovered ? node.ringColor : "#181818"}
+                      emissiveIntensity={isHovered ? 0.35 : 0.08}
+                      side={THREE.BackSide}
+                    />
+                  </mesh>
+                ) : null}
+                <mesh>
+                  <sphereGeometry args={[markerRadius, 24, 24]} />
+                  <meshBasicMaterial color={markerCenterColor} />
+                </mesh>
+              </>
+            )}
           </group>
         );
       })}
@@ -283,29 +312,26 @@ function Scene({
 
 interface PopupProps {
   node: SphereNode;
-  screenX: number;
-  screenY: number;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
+  popupRef: React.RefObject<HTMLDivElement>;
   onClick: () => void;
 }
 
-function NodePopup({ node, screenX, screenY, onMouseEnter, onMouseLeave, onClick }: PopupProps) {
+function NodePopup({ node, popupRef, onClick }: PopupProps) {
   const chipBackground = node.color ?? "#525252";
   const chipTextColor = getReadableTextColor(chipBackground);
 
   return createPortal(
     <div
+      ref={popupRef}
       style={{
-        position: "absolute",
-        left: `${screenX}px`,
-        top: `${screenY}px`,
-        transform: "translate(-50%, -120%)",
+        position: "fixed",
+        left: 0,
+        top: 0,
+        visibility: "hidden",
+        willChange: "transform",
         zIndex: 9999,
         pointerEvents: "auto"
       }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
     >
       <button
         type="button"
@@ -322,9 +348,11 @@ function NodePopup({ node, screenX, screenY, onMouseEnter, onMouseLeave, onClick
           style={{ borderColor: node.color ?? "#525252" }}
         >
           {node.iconSrc ? (
-            <img
+            <Image
               src={node.iconSrc}
               alt={node.label}
+              width={node.id === "wisconsin-autonomous" ? 120 : 72}
+              height={72}
               className={
                 node.id === "wisconsin-autonomous" ? "h-[72px] w-[120px] object-cover" : "h-[72px] w-[72px] object-cover"
               }
@@ -359,112 +387,95 @@ function NodePopup({ node, screenX, screenY, onMouseEnter, onMouseLeave, onClick
 }
 
 export function IcoSphereEmbed({ nodes, onHoverNodeChange }: IcoSphereEmbedProps) {
-  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-  const [screenPosition, setScreenPosition] = useState<ScreenPosition | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const [mounted, setMounted] = useState(false);
-  const clearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const { prefersReducedMotion, useLowPowerGraphics } = useGraphicsPreferences();
 
   useEffect(() => {
     setMounted(true);
     return () => {
-      if (clearTimeoutRef.current) {
-        clearTimeout(clearTimeoutRef.current);
+      if (activationTimeoutRef.current) {
+        clearTimeout(activationTimeoutRef.current);
       }
     };
   }, []);
 
-  const cancelClear = useCallback(() => {
-    if (clearTimeoutRef.current) {
-      clearTimeout(clearTimeoutRef.current);
-      clearTimeoutRef.current = null;
+  const cancelActivation = useCallback(() => {
+    if (activationTimeoutRef.current) {
+      clearTimeout(activationTimeoutRef.current);
+      activationTimeoutRef.current = null;
     }
   }, []);
 
   const handleHoverNode = useCallback(
     (id: string | null) => {
-      cancelClear();
+      cancelActivation();
       if (id) {
-        setHoveredNodeId(id);
-      } else {
-        clearTimeoutRef.current = setTimeout(() => {
-          setHoveredNodeId(null);
-        }, 350);
+        if (id === selectedNodeId) {
+          return;
+        }
+        activationTimeoutRef.current = setTimeout(() => {
+          setSelectedNodeId(id);
+          activationTimeoutRef.current = null;
+        }, NODE_HOVER_ACTIVATION_MS);
       }
     },
-    [cancelClear]
+    [cancelActivation, selectedNodeId]
   );
 
-  const handleClickNode = useCallback((node: SphereNode) => {
-    if (node.href.startsWith("#")) {
-      const target = document.querySelector(node.href);
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    window.open(node.href, "_blank", "noopener,noreferrer");
-  }, []);
+  const handleClickNode = useCallback(
+    (node: SphereNode, pointerType?: string) => {
+      if (pointerType === "touch") {
+        cancelActivation();
+        setSelectedNodeId(node.id);
+        return;
+      }
 
-  const positionRef = useRef<ScreenPosition | null>(null);
-  const rafRef = useRef<number | null>(null);
+      if (node.href.startsWith("#")) {
+        const target = document.querySelector(node.href);
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      window.open(node.href, "_blank", "noopener,noreferrer");
+    },
+    [cancelActivation]
+  );
 
   const handleScreenPosition = useCallback((position: ScreenPosition | null) => {
-    positionRef.current = position;
-    if (rafRef.current === null) {
-      rafRef.current = requestAnimationFrame(() => {
-        setScreenPosition((previous) => {
-          const next = positionRef.current;
-          if (!previous || !next) {
-            return next;
-          }
-
-          const isSamePosition =
-            previous.id === next.id &&
-            previous.visible === next.visible &&
-            Math.abs(previous.screenX - next.screenX) < 0.5 &&
-            Math.abs(previous.screenY - next.screenY) < 0.5;
-
-          return isSamePosition ? previous : next;
-        });
-        rafRef.current = null;
-      });
+    const popup = popupRef.current;
+    if (!popup) {
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
+    popup.style.visibility = position?.visible ? "visible" : "hidden";
+    if (position) {
+      popup.style.transform = `translate3d(${position.screenX}px, ${position.screenY}px, 0) translate(-50%, -120%)`;
+    }
   }, []);
 
   const handleCanvasCreated = useCallback(({ gl }: { gl: THREE.WebGLRenderer }) => {
     setCanvasEl(gl.domElement);
   }, []);
 
-  const hoveredNode = nodes.find((node) => node.id === hoveredNodeId);
-  const hoveredScreenPos = screenPosition && screenPosition.id === hoveredNodeId ? screenPosition : null;
+  const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
   useEffect(() => {
     if (!onHoverNodeChange) {
       return;
     }
-    onHoverNodeChange(hoveredNode ?? null);
-  }, [hoveredNode, onHoverNodeChange]);
-
-  useEffect(() => {
-    if (!hoveredNodeId) {
-      setScreenPosition(null);
-    }
-  }, [hoveredNodeId]);
+    onHoverNodeChange(selectedNode ?? null);
+  }, [selectedNode, onHoverNodeChange]);
 
   return (
     <div className="relative h-full w-full">
       <div className="absolute inset-0 overflow-hidden rounded-full bg-white/64 shadow-soft-line dark:bg-white/[0.06]">
         <Canvas
-          dpr={[1, 1.5]}
+          dpr={useLowPowerGraphics ? [0.75, 1] : [1, 1.5]}
           camera={{ position: [0, 0, 4.1], fov: 42 }}
-          gl={{ antialias: true, alpha: true }}
+          gl={{ antialias: !useLowPowerGraphics, alpha: true, powerPreference: useLowPowerGraphics ? "low-power" : "high-performance" }}
           onCreated={handleCanvasCreated}
         >
           <ambientLight intensity={0.78} />
@@ -472,32 +483,31 @@ export function IcoSphereEmbed({ nodes, onHoverNodeChange }: IcoSphereEmbedProps
           <directionalLight intensity={0.38} position={[-3, -2, -4]} />
           <Scene
             nodes={nodes}
-            hoveredId={hoveredNodeId}
+            hoveredId={selectedNodeId}
             onHoverNode={handleHoverNode}
             onClickNode={handleClickNode}
             canvasEl={canvasEl}
             onScreenPosition={handleScreenPosition}
+            prefersReducedMotion={prefersReducedMotion}
           />
         </Canvas>
       </div>
 
-      {mounted && hoveredNode && hoveredScreenPos && hoveredScreenPos.visible ? (
+      {mounted && selectedNode ? (
         <NodePopup
-          node={hoveredNode}
-          screenX={hoveredScreenPos.screenX}
-          screenY={hoveredScreenPos.screenY}
-          onMouseEnter={() => {
-            cancelClear();
-            setHoveredNodeId(hoveredNode.id);
-          }}
-          onMouseLeave={() => {
-            clearTimeoutRef.current = setTimeout(() => {
-              setHoveredNodeId(null);
-            }, 350);
-          }}
-          onClick={() => handleClickNode(hoveredNode)}
+          node={selectedNode}
+          popupRef={popupRef}
+          onClick={() => handleClickNode(selectedNode)}
         />
       ) : null}
+
+      <nav aria-label="Isosphere links" className="sr-only focus-within:not-sr-only">
+        {nodes.map((node) => (
+          <a key={node.id} href={node.href} target="_blank" rel="noreferrer">
+            {node.label}
+          </a>
+        ))}
+      </nav>
     </div>
   );
 }
